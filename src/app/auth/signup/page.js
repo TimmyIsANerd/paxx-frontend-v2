@@ -1,19 +1,19 @@
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { login } from "@/services/auth";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { register } from "@/services/auth";
 import Loading from "@/components/Loading";
+import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [formData, setFormData] = useState({
+    fullName: "",
     emailAddress: "",
     password: "",
+    userType: "merchant",
   });
   const [viewPassword, setViewPassword] = useState(true);
   const [loading, setLoading] = useState(false);
-  const { storeAuthCookie, storeProfile } = useAuth();
   const { push } = useRouter();
 
   function handleChange(e) {
@@ -21,28 +21,45 @@ export default function LoginPage() {
     setFormData((formData) => ({ ...formData, [id]: value }));
   }
 
+  function clearField() {
+    setFormData({
+      fullName: "",
+      emailAddress: "",
+      password: "",
+      userType: "merchant",
+    });
+  }
+
   async function handleSubmit(e) {
     setLoading(true);
     e.preventDefault();
-    if (formData.emailAddress === "" || formData.password === "") {
-      toast("Please make sure to enter both Email Address & Password.");
+    if (
+      formData.emailAddress === "" ||
+      formData.password === "" ||
+      formData.fullName === ""
+    ) {
+      toast("Please make sure all fields are filled.");
       setLoading(false);
       return;
     }
 
     try {
-      const data = await login(formData);
-      storeAuthCookie(data.token);
-      storeProfile(data.user);
-      toast("Successfully Logged in User");
-      push("/dashboard");
+      await register(formData);
+      toast("Successfully Signed Up");
+
+      setTimeout(() => {
+        push("/auth/login");
+      }, 3000);
     } catch (error) {
-      if (error && !error.response) {
-        toast("Server Problems! ❌ Please try again later!");
-      }
+      console.error(error);
       if (error && error.response) {
         toast(error.response.data.message);
       }
+      if (error && !error.response) {
+        toast("Server Problems! ❌ Please try again later!");
+      }
+
+      clearField();
     } finally {
       setLoading(false);
     }
@@ -60,13 +77,23 @@ export default function LoginPage() {
                 alt=""
               />
             </a>
-            <h3 className="mb-10 text-3xl font-medium text-white tracking-5xl">
-              Log in to your account
+            <h3 className="mb-10 capitalize text-3xl font-medium text-white tracking-5xl">
+              Create Your Paxx account
             </h3>
             <div className="mb-2 border border-gray-900 focus-within:border-white overflow-hidden rounded-3xl">
               <input
                 className="pl-6 pr-16 py-4 text-gray-300 w-full placeholder-gray-300 outline-none bg-transparent"
                 type="text"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={handleChange}
+                id="fullName"
+              />
+            </div>
+            <div className="mb-2 border border-gray-900 focus-within:border-white overflow-hidden rounded-3xl">
+              <input
+                className="pl-6 pr-16 py-4 text-gray-300 w-full placeholder-gray-300 outline-none bg-transparent"
+                type="email"
                 placeholder="Email Address"
                 value={formData.emailAddress}
                 onChange={handleChange}
@@ -124,25 +151,19 @@ export default function LoginPage() {
               />
             </div>
             <button
-              className="mb-6 px-14 py-4 text-center font-medium tracking-2xl border-2 border-[#005BFE] bg-[#005BFE]/70 hover:bg-[#005BFE]/60 text-white focus:ring-4 focus:bg-[#005BFE]/60 capitalize focus:ring-opacity-40 rounded-full transition duration-700 w-full hover:shadow-2xl hover:shadow-[#005BFE] flex items-center justify-center"
+              className="mb-6 px-14 py-4 text-center font-medium tracking-2xl border-2 border-[#005BFE] bg-[#005BFE]/70 hover:bg-[#005BFE]/60 text-white focus:ring-4 focus:bg-[#005BFE]/60 capitalize focus:ring-opacity-40 rounded-full transition duration-300 w-full hover:shadow-2xl hover:shadow-[#005BFE] flex items-center justify-center"
               type="submit"
             >
-              {loading ? <Loading /> : "Log In"}
+              {loading ? <Loading /> : "Sign Up"}
             </button>
 
-            <a
-              className="mb-3 block text-sm text-gray-300 underline"
-              href="/forgot-password"
-            >
-              Forgot password?
-            </a>
             <span className="text-sm block">
-              Don't have an Account?{" "}
+              Already have an Account?{" "}
               <a
                 className="mb-10 inline-block text-gray-300 underline"
-                href="/auth/signup"
+                href="/auth/login"
               >
-                Sign Up
+                Log In
               </a>
             </span>
             <div className="flex flex-wrap items-center mb-8">
@@ -150,7 +171,7 @@ export default function LoginPage() {
                 <div className="h-px"></div>
               </div>
               <div className="px-5 text-xs text-gray-300 font-medium capitalize">
-                or sign in with email
+                or sign up with email
               </div>
               <div className="flex-1 bg-gray-900">
                 <div className="h-px"></div>
@@ -170,7 +191,7 @@ export default function LoginPage() {
                     />
                   </div>
                   <span className="text-sm text-white font-medium">
-                    Sign in with Google
+                    Sign Up With Google
                   </span>
                 </button>
               </div>
