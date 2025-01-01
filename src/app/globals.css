@@ -31,3 +31,14 @@ body {
   background: #1e293b;
   border-radius: 10px;
 }
+
+/* Remove arrows in input number form */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
