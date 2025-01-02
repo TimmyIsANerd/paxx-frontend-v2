@@ -3,10 +3,25 @@
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
-const stores = [
+const data = [
   {
     id: 1,
+    name: "Test",
+    orders: 1,
+    revenue: "USD 5,000.00",
+    status: true,
+  },
+  {
+    id: 2,
+    name: "Test",
+    orders: 1,
+    revenue: "USD 5,000.00",
+    status: true,
+  },
+  {
+    id: 3,
     name: "Test",
     orders: 1,
     revenue: "USD 5,000.00",
@@ -15,7 +30,10 @@ const stores = [
 ];
 
 export default function StoreTable() {
+  const [stores, setStores] = useState(data);
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const { push } = useRouter();
 
   const toggleDropdown = (id) => {
     setActiveDropdown(activeDropdown === id ? null : id);
@@ -23,6 +41,11 @@ export default function StoreTable() {
 
   const handleToggleStatus = (id) => {
     console.log("Toggle status for store:", id);
+    setStores((prev) =>
+      prev.map((store) =>
+        store.id === id ? { ...store, status: !store.status } : store
+      )
+    );
   };
 
   return (
@@ -55,7 +78,10 @@ export default function StoreTable() {
                 key={store.id}
                 className="border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors relative"
               >
-                <td className="px-6 py-4">
+                <td
+                  className="px-6 py-4 hover:cursor-pointer"
+                  onClick={() => push(`/dashboard/store/${store.id}`)}
+                >
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {store.name}
                   </span>

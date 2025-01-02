@@ -10,27 +10,22 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
-  BanknotesIcon,
 } from "@heroicons/react/24/outline";
 
 const navigation = [
-    { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
-    { name: "Payments", icon: CreditCardIcon, href: "/dashboard/payments" },
-    {
-      name: "Transactions",
-      icon: BanknotesIcon,
-      href: "/dashboard/transactions",
-    },
-    { name: "Store", icon: ShoppingBagIcon, href: "/dashboard/store" },
-    { name: "Settings", icon: Cog6ToothIcon, href: "/dashboard/settings" },
-    { name: "Logout", icon: ArrowRightOnRectangleIcon, href: "/logout" },
-  ];
+  { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
+  { name: "Payments", icon: CreditCardIcon, href: "/dashboard/payments" },
+  { name: "Payouts", icon: ArrowsRightLeftIcon, href: "/dashboard/payouts" },
+  { name: "Store", icon: ShoppingBagIcon, href: "/dashboard/store" },
+  { name: "Settings", icon: Cog6ToothIcon, href: "/dashboard/settings" },
+  { name: "Logout", icon: ArrowRightOnRectangleIcon, href: "/logout" },
+];
 
 export default function Sidebar() {
   const [activeItem, setActiveItem] = useState("Dashboard");
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-[#0B0F1C]">
+    <div className="md:flex h-screen w-64 flex-col bg-[#0B0F1C] hidden">
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <img
