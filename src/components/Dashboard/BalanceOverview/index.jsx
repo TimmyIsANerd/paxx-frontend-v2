@@ -9,6 +9,7 @@ import {
 import SendModal from "./SendModal";
 import ReceiveModal from "./ReceiveModal";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
 
 const actions = [
   {
@@ -31,6 +32,7 @@ const actions = [
 export default function BalanceOverview() {
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const { user } = useAuth();
 
   const handleActionClick = (label) => {
     if (label === "Send") setSendModalOpen(true);
@@ -112,6 +114,7 @@ export default function BalanceOverview() {
       <ReceiveModal
         isOpen={receiveModalOpen}
         onClose={() => setReceiveModalOpen(false)}
+        walletAddress={user ? user.wallet : ""} 
       />
     </div>
   );
