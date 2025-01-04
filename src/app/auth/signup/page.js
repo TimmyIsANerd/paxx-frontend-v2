@@ -48,7 +48,7 @@ export default function SignUpPage() {
       toast("Successfully Signed Up");
 
       setTimeout(() => {
-        push("/auth/login");
+        push("/auth/verify-otp");
       }, 3000);
     } catch (error) {
       console.error(error);

@@ -44,7 +44,7 @@ export default function CustomizeTab() {
           <div className="flex items-center gap-4">
             <input
               type="text"
-              value="paystack.shop/usepaxxtest"
+              value="usepaxx.xyz/usepaxxtest"
               readOnly
               className="flex-1 px-4 py-2 bg-[#131B2C] border border-gray-800 rounded-lg text-gray-400"
             />

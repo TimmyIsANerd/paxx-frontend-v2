@@ -1,8 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-toastify";
 
-export default function ReceiveModal({ isOpen, onClose }) {
-  const walletAddress = "5g6N...MxUF"; // Replace with actual wallet address
-
+export default function ReceiveModal({ isOpen, onClose, walletAddress }) {
   if (!isOpen) return null;
 
   return (
@@ -18,10 +17,20 @@ export default function ReceiveModal({ isOpen, onClose }) {
         <div className="space-y-4">
           <p className="text-gray-300">Your wallet address:</p>
           <div className="bg-[#1F2A3C] border border-gray-600 rounded-lg p-4">
-            <p className="text-white font-mono break-all">{walletAddress}</p>
+            <p className="text-white font-mono break-all">
+              {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
+            </p>
           </div>
           <button
-            onClick={() => navigator.clipboard.writeText(walletAddress)}
+            onClick={() => {
+              try {
+                navigator.clipboard.writeText(walletAddress);
+                toast("Wallet Address Copied!");
+              } catch (error) {
+                console.error(error);
+                toast("Error copying wallet address");
+              }
+            }}
             className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
           >
             Copy Address
