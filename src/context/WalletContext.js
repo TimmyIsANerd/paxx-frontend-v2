@@ -19,7 +19,6 @@ export const WalletContextProvider = ({ children }) => {
   async function getBalances() {
     try {
       const data = await getWalletData(token);
-      console.log(data);
       setDashboardData(data);
     } catch (error) {
       if (error && !error.response) {
