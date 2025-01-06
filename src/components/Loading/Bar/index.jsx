@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import NProgress from "nprogress";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
-export function SuspenseComponent() {
-  return <LoadingBar />;
-}
-
-export default function LoadingBar() {
+function LoadingBarComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -25,4 +20,12 @@ export default function LoadingBar() {
   }, [pathname, searchParams]);
 
   return null;
+}
+
+export default function LoadingBar() {
+  return (
+    <Suspense fallback={null}>
+      <LoadingBarComponent />
+    </Suspense>
+  );
 }
