@@ -13,7 +13,7 @@ export default function DashboardHome() {
       <OnboardingSection
         firstName={user ? getFirstName(user.fullName) : "..."}
       />
-      <TransactionHistory />
+      {/* <TransactionHistory /> */}
     </div>
   );
 }

@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
   color: #ededed;
   background: #081028;
@@ -41,4 +40,13 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+#nprogress .bar {
+  background: #005bfe !important;
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #005bfe, 0 0 5px #005bfe !important;
 }

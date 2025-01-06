@@ -95,7 +95,7 @@ export default function Sidebar() {
       {/* User Profile */}
       <div className="border-t border-white/5 p-3">
         <Link
-          href="/profile"
+          href="/dashboard/settings"
           className="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
         >
           <div className="relative">

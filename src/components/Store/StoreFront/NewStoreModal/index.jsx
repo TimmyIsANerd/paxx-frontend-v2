@@ -1,20 +1,47 @@
+
 "use client";
 
 import { useState } from "react";
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import Loading from "@/components/Loading";
+import { toast } from "react-toastify";
+import { createStore } from "@/services/store";
+import { useAuth } from "@/context/AuthContext";
 
-const currencies = ["USDC", "SOL"];
+const currencies = ["usdc", "solana"];
 
-export default function NewStorefrontModal({ onClose, onSubmit }) {
+export default function NewStorefrontModal({ onClose }) {
   const [formData, setFormData] = useState({
     name: "",
-    currency: "USDC",
+    currency: "usdc",
     storeLink: "",
   });
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    setLoading(true);
+
+    const payload = {
+      storeName: formData.name,
+      defaultCurrency: formData.currency,
+      storeLink: formData.storeLink,
+    };
+
+    try {
+      await createStore(payload, token);
+      toast("Storefront Created Successfully");
+      window.location.reload();
+    } catch (error) {
+      if (error && error.response) {
+        toast(error.response.data.message);
+      } else {
+        toast("Failed to Create Store... Please Try Again Later");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +77,7 @@ export default function NewStorefrontModal({ onClose, onSubmit }) {
                 }
                 placeholder="The name of your store"
                 className="w-full px-4 py-2.5 bg-[#1F2937] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#005BFE] focus:border-transparent text-white placeholder-gray-500 transition-all"
+                required
               />
             </div>
 
@@ -65,10 +93,11 @@ export default function NewStorefrontModal({ onClose, onSubmit }) {
                     setFormData({ ...formData, currency: e.target.value })
                   }
                   className="w-full px-4 py-2.5 bg-[#1F2937] border border-gray-700 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#005BFE] focus:border-transparent text-white transition-all pr-10"
+                  required
                 >
                   {currencies.map((currency) => (
                     <option key={currency} value={currency}>
-                      {currency}
+                      {currency.toUpperCase()}
                     </option>
                   ))}
                 </select>
@@ -83,7 +112,7 @@ export default function NewStorefrontModal({ onClose, onSubmit }) {
               </label>
               <div className="flex items-center">
                 <span className="px-4 py-2.5 bg-[#1F2937] border border-r-0 border-gray-700 rounded-l-lg text-gray-400">
-                  usepaxx.xyz/
+                  store.usepaxx.xyz/
                 </span>
                 <input
                   type="text"
@@ -92,6 +121,7 @@ export default function NewStorefrontModal({ onClose, onSubmit }) {
                     setFormData({ ...formData, storeLink: e.target.value })
                   }
                   className="flex-1 px-4 py-2.5 bg-[#1F2937] border border-gray-700 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#005BFE] focus:border-transparent text-white placeholder-gray-500 transition-all"
+                  required
                 />
               </div>
             </div>
@@ -107,11 +137,16 @@ export default function NewStorefrontModal({ onClose, onSubmit }) {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-gradient-to-r from-[#005BFE] to-[#00A1FE] text-white rounded-lg font-medium hover:opacity-90 transition-opacity relative group"
+                className="px-6 py-2 bg-gradient-to-r from-[#005BFE] to-[#00A1FE] text-white rounded-lg font-medium hover:opacity-90 transition-opacity relative group flex justify-center"
+                disabled={loading}
               >
                 {/* Button glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#005BFE]/50 to-[#00A1FE]/50 opacity-0 group-hover:opacity-100 blur-xl rounded-lg transition-opacity" />
-                <span className="relative">Create</span>
+                {loading ? (
+                  <Loading />
+                ) : (
+                  <span className="relative">Create</span>
+                )}
               </button>
             </div>
           </form>

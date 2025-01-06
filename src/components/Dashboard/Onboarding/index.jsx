@@ -9,6 +9,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import BalanceOverview from "../BalanceOverview";
+import { useRouter } from "next/navigation";
 
 const features = [
   {
@@ -34,7 +35,6 @@ const features = [
       "Create a free online store, Accept payments in SOL & other SPL Compatible Tokens",
     buttonText: "Create Store",
     url: "/dashboard/store/create",
-    primary: true,
   },
   {
     icon: DevicePhoneMobileIcon,
@@ -48,6 +48,7 @@ const features = [
 
 export default function OnboardingSection({ firstName }) {
   const [showOptions, setShowOptions] = useState(true);
+  const { push } = useRouter();
 
   return (
     <>
@@ -93,15 +94,24 @@ export default function OnboardingSection({ firstName }) {
                     {feature.description}
                   </p>
 
-                  <button
-                    className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
-                      feature.primary
-                        ? "bg-blue-500 hover:bg-blue-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {feature.buttonText}
-                  </button>
+                  {feature.primary && feature.url ? (
+                    <button
+                      onClick={() => push(feature.url)}
+                      className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-blue-500 hover:bg-blue-600 text-white `}
+                    >
+                      {feature.buttonText}
+                    </button>
+                  ) : (
+                    <button
+                      className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                        feature.primary
+                          ? "bg-blue-500 hover:bg-blue-600 text-white"
+                          : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      {feature.buttonText}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

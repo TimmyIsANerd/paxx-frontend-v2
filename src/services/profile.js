@@ -18,3 +18,17 @@ export async function getWalletData(bearerToken) {
     throw error;
   }
 }
+
+export async function getProfile(bearerToken) {
+  try {
+    const response = await axios.get(`${baseURL}/api/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    throw error;
+  }
+}

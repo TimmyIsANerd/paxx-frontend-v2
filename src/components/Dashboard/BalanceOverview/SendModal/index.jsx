@@ -1,12 +1,59 @@
 import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import Loading from "@/components/Loading";
+import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
+import { withdraw } from "@/services/wallet";
+import { useWallet } from "@/context/WalletContext";
 
 export default function SendModal({ isOpen, onClose }) {
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("USDC");
+  const [currency, setCurrency] = useState("usdc");
   const [address, setAddress] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
+  const { getLatestBalance, dashboardData: wallet } = useWallet();
 
   if (!isOpen) return null;
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (currency === "solana" && amount > Number(wallet.totalSolBalance)) {
+      toast("Insufficient SOL balance");
+      return;
+    }
+
+    if (currency === "usdc" && amount > Number(wallet.USDCBalance)) {
+      toast("Insufficient USDC balance");
+      return;
+    }
+
+    setLoading(true);
+    const payload = {
+      amount,
+      token: currency,
+      destinationAddress: address,
+    };
+
+    try {
+      await withdraw(payload, token);
+      toast(`Successfully sent ${amount} ${currency} to ${address}`);
+      await getLatestBalance();
+      onClose();
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(`Error: ${error.response.data.message}`);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
@@ -18,7 +65,7 @@ export default function SendModal({ isOpen, onClose }) {
           <XMarkIcon className="h-6 w-6" />
         </button>
         <h2 className="text-2xl font-bold text-white mb-6">Send Crypto</h2>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="amount"
@@ -35,6 +82,7 @@ export default function SendModal({ isOpen, onClose }) {
               placeholder="0.00"
               min={0}
               step={0.01}
+              required
             />
           </div>
           <div>
@@ -49,9 +97,10 @@ export default function SendModal({ isOpen, onClose }) {
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               className="w-full px-3 py-2 bg-[#1F2A3C] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
-              <option value="USDC">USDC</option>
-              <option value="SOL">SOL</option>
+              <option value="usdc">USDC</option>
+              <option value="solana">SOL</option>
             </select>
           </div>
           <div>
@@ -68,13 +117,14 @@ export default function SendModal({ isOpen, onClose }) {
               onChange={(e) => setAddress(e.target.value)}
               className="w-full px-3 py-2 bg-[#1F2A3C] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter wallet address"
+              required
             />
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+            className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors inline-flex justify-center items-center"
           >
-            Send
+            {loading ? <Loading /> : "Send"}
           </button>
         </form>
       </div>

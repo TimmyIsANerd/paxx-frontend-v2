@@ -10,6 +10,10 @@ import {
 import { FaImage } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { createLink } from "@/services/links";
+import { useAuth } from "@/context/AuthContext";
+import Loading from "@/components/Loading";
+import { useRouter } from "next/navigation";
 
 const paymentTypes = [
   {
@@ -41,17 +45,20 @@ export default function PaymentForm() {
   const [formData, setFormData] = useState({
     pageName: "",
     priceType: "fixed",
-    currency: "USDC",
-    amount: "",
-    minAmount: "",
-    maxAmount: "",
+    currency: "usdc",
+    amount: 0,
+    minAmount: 0,
+    maxAmount: 0,
     description: "",
     image: null,
   });
   const fileInputRef = useRef(null);
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const { push } = useRouter();
 
   const handleTypeSelect = (type) => {
-    if (type === "subscription") {
+    if (type === "Subscription") {
       toast.info("Feature in Development", {
         position: "top-right",
         autoClose: 3000,
@@ -63,7 +70,7 @@ export default function PaymentForm() {
       return;
     }
     setSelectedType(type);
-    if (type !== "donation") {
+    if (type !== "Donation") {
       setFormData((prev) => ({
         ...prev,
         priceType: "fixed",
@@ -78,10 +85,29 @@ export default function PaymentForm() {
     setStep(2);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
+    setLoading(true);
+    const payload = {
+      ...formData,
+      linkType: selectedType,
+      amount:
+        formData.priceType === "fixed" ? formData.amount : formData.minAmount,
+    };
+
+    try {
+      await createLink(payload, token);
+      toast.success("Successfully created payment link");
+      push("/dashboard/payments");
+    } catch (error) {
+      if (error?.response) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Server Issues! Please Try Again Later");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePriceTypeChange = (type) => {
@@ -97,7 +123,7 @@ export default function PaymentForm() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 3 * 1024 * 1024) {
+      if (file.size > 2 * 1024 * 1024) {
         toast.error("File size exceeds max of 3MB", {
           position: "top-right",
           autoClose: 3000,
@@ -108,16 +134,20 @@ export default function PaymentForm() {
         });
         e.target.value = null;
       } else {
-        setFormData({ ...formData, image: file });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData({ ...formData, image: reader.result });
+        };
+        reader.readAsDataURL(file);
       }
     }
   };
 
   return (
-    <div className="w-full py-6">
+    <div className="w-full py-6 overflow-y-scroll max-h-screen">
       <div className="max-w-4xl mx-auto">
         {step === 1 ? (
-          <div className="space-y-6">
+          <div className="space-y-6 p-5">
             <h1 className="text-2xl font-bold text-white text-center mb-8">
               Select a payment link type to continue
             </h1>
@@ -126,11 +156,11 @@ export default function PaymentForm() {
                 <div
                   key={type.id}
                   className={`bg-[#131B2C] rounded-lg p-6 cursor-pointer transition-all ${
-                    selectedType === type.id
+                    selectedType === type.title
                       ? "ring-2 ring-purple-500"
                       : "hover:bg-[#1a2235]"
                   }`}
-                  onClick={() => handleTypeSelect(type.id)}
+                  onClick={() => handleTypeSelect(type.title)}
                 >
                   <div className="flex flex-col items-center text-center space-y-4">
                     <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
@@ -142,12 +172,12 @@ export default function PaymentForm() {
                     <p className="text-sm text-gray-400">{type.description}</p>
                     <button
                       className={`w-full py-2 px-4 rounded-md transition-colors ${
-                        selectedType === type.id
+                        selectedType === type.title
                           ? "bg-blue-500 text-white"
                           : "bg-gray-700 text-gray-300"
                       }`}
                     >
-                      {selectedType === type.id ? "Selected" : "Select"}
+                      {selectedType === type.title ? "Selected" : "Select"}
                     </button>
                   </div>
                 </div>
@@ -164,16 +194,10 @@ export default function PaymentForm() {
             </div>
           </div>
         ) : (
-          <div className="bg-[#131B2C] rounded-lg p-8 shadow-lg">
+          <div className="bg-[#131B2C] rounded-lg shadow-lg p-5 max-w-2xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-white">
-                Create a{" "}
-                {selectedType === "one-time"
-                  ? "One-Time Payment"
-                  : selectedType === "subscription"
-                  ? "Subscription"
-                  : "Donation"}{" "}
-                Payment Link
+                Create a {selectedType} Payment Link
               </h2>
               <button
                 onClick={() => setStep(1)}
@@ -198,6 +222,7 @@ export default function PaymentForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, pageName: e.target.value })
                   }
+                  required
                   className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   placeholder="Enter page name"
                 />
@@ -217,11 +242,11 @@ export default function PaymentForm() {
                   }
                   className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 >
-                  <option value="USDC">USDC</option>
-                  <option value="SOL">SOL</option>
+                  <option value="usdc">USDC</option>
+                  <option value="solana">SOL</option>
                 </select>
               </div>
-              {selectedType === "donation" && (
+              {selectedType === "Donation" && (
                 <>
                   <div className="space-y-4">
                     <label className="block text-sm font-medium text-gray-300">
@@ -267,6 +292,9 @@ export default function PaymentForm() {
                         onChange={(e) =>
                           setFormData({ ...formData, amount: e.target.value })
                         }
+                        required
+                        min="0.01"
+                        step="0.01"
                         placeholder="0.00"
                         className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                       />
@@ -287,9 +315,12 @@ export default function PaymentForm() {
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              minAmount: e.target.value,
+                              minAmount: Number(e.target.value),
                             })
                           }
+                          required
+                          min="0.01"
+                          step="0.01"
                           placeholder="0.00"
                           className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                         />
@@ -308,7 +339,7 @@ export default function PaymentForm() {
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              maxAmount: e.target.value,
+                              maxAmount: Number(e.target.value),
                             })
                           }
                           placeholder="0.00"
@@ -319,7 +350,7 @@ export default function PaymentForm() {
                   )}
                 </>
               )}
-              {selectedType !== "donation" && (
+              {selectedType !== "Donation" && (
                 <div className="space-y-4">
                   <label
                     htmlFor="amount"
@@ -334,6 +365,9 @@ export default function PaymentForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, amount: e.target.value })
                     }
+                    required
+                    min="0.01"
+                    step="0.01"
                     placeholder="0.00"
                     className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   />
@@ -352,6 +386,7 @@ export default function PaymentForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
+                  required
                   rows={4}
                   className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
                   placeholder="Enter description"
@@ -369,7 +404,7 @@ export default function PaymentForm() {
                     <FaImage className="w-12 h-12 text-gray-400 mb-4" />
                     <p className="text-sm text-gray-400 text-center mb-2">
                       {formData.image
-                        ? formData.image.name
+                        ? "Image Uploaded"
                         : "Click to Upload Image"}
                     </p>
                     <p className="text-xs text-gray-500 text-center">
@@ -396,9 +431,9 @@ export default function PaymentForm() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                  className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex justify-center"
                 >
-                  Create Link
+                  {loading ? <Loading /> : " Create Link"}
                 </button>
               </div>
             </form>
