@@ -2,11 +2,33 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
+import { useState } from "react";
+import UpdateModal from "@/components/UpdateModal";
 
 export default function DataTable({ links, handleDelete }) {
   const { push } = useRouter();
+  const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState(null);
+
+  const handleEditClick = (link) => {
+    setSelectedLink(link);
+    setUpdateModalOpen(true);
+  };
+
+  const handleUpdate = async (updatedData) => {
+    // Call your update service here with updatedData
+    // Example: await updateLink(selectedLink.id, updatedData);
+    setUpdateModalOpen(false);
+  };
+
   return (
     <div className="w-full bg-[#0B0F1C] rounded-lg overflow-hidden">
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setUpdateModalOpen(false)}
+        initialData={selectedLink}
+        onUpdate={handleUpdate}
+      />
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left text-gray-200">
           <thead className="text-xs uppercase bg-[#131B2C] border-b border-gray-700">
@@ -21,7 +43,7 @@ export default function DataTable({ links, handleDelete }) {
             </tr>
           </thead>
           <tbody>
-            {links.map((row, index) => (
+            {links.map((row) => (
               <tr
                 key={row.id}
                 className="border-b border-gray-700 hover:bg-[#131B2C] transition-colors"
@@ -60,7 +82,10 @@ export default function DataTable({ links, handleDelete }) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <button className="p-1 hover:text-purple-500 transition-colors">
+                    <button
+                      className="p-1 hover:text-purple-500 transition-colors"
+                      onClick={() => handleEditClick(row)}
+                    >
                       <PencilIcon className="w-4 h-4" />
                     </button>
                     <button
