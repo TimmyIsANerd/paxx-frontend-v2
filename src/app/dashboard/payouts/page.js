@@ -5,7 +5,7 @@ export default function PayoutPage() {
   return (
     <div className="p-6 w-full my-3 max-h-screen overflow-y-auto">
       <BalanceOverview />
-      <TransactionHistory />
+      {/* <TransactionHistory /> */}
     </div>
   );
 }
