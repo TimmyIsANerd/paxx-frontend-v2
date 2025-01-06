@@ -114,7 +114,7 @@ export default function PaymentForm() {
   };
 
   return (
-    <div className="w-full py-6">
+    <div className="w-full py-6 overflow-y-scroll max-h-screen">
       <div className="max-w-4xl mx-auto">
         {step === 1 ? (
           <div className="space-y-6">
