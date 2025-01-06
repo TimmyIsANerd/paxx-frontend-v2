@@ -3,6 +3,11 @@
 import { useEffect } from "react";
 import NProgress from "nprogress";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
+export function SuspenseComponent() {
+  return <LoadingBar />;
+}
 
 export default function LoadingBar() {
   const pathname = usePathname();
