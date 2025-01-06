@@ -7,10 +7,6 @@ import NewStorefrontModal from "@/components/Store/StoreFront/NewStoreModal";
 export default function StorePage() {
   const [openNewStoreFrontModal, setOpenNewStoreFrontModal] = useState(false);
 
-  async function handleNewStorefront(formData) {
-    console.log("Create new store front with data:", formData);
-    setOpenNewStoreFrontModal(false);
-  }
 
   return (
     <>
@@ -23,7 +19,6 @@ export default function StorePage() {
         <StoreTable />
         {openNewStoreFrontModal && (
           <NewStorefrontModal
-            onSubmit={handleNewStorefront}
             onClose={() => setOpenNewStoreFrontModal(false)}
           />
         )}
