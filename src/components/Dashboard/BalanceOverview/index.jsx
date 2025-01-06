@@ -37,8 +37,6 @@ export default function BalanceOverview() {
   const { user } = useAuth();
   const { dashboardData: dashboard } = useWallet();
 
-  console.log("Dashboard Data: ", dashboard);
-
   const handleActionClick = (label) => {
     if (label === "Send") setSendModalOpen(true);
     if (label === "Receive") setReceiveModalOpen(true);
@@ -69,8 +67,7 @@ export default function BalanceOverview() {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500" />
                 <span className="text-sm text-green-500">
-                  {dashboard ? dashboard.percentageIncreaseUSDC : ""}% from last
-                  month
+                  {dashboard ? dashboard.percentageIncreaseUSDC : ""}% from last month
                 </span>
               </div>
             </div>
