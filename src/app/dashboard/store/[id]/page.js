@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import OrdersTab from "@/components/Store/StoreFront/UpdateStore/StoreManagement/OrdersTab";
 import ProductsTab from "@/components/Store/StoreFront/UpdateStore/StoreManagement/ProductsTab";
@@ -8,40 +8,96 @@ import CustomizeTab from "@/components/Store/StoreFront/UpdateStore/StoreManagem
 import DiscountTab from "@/components/Store/StoreFront/UpdateStore/StoreManagement/DiscountTab";
 import DeliveryTab from "@/components/Store/StoreFront/UpdateStore/StoreManagement/DeliveryTab";
 import AfterPurchaseTab from "@/components/Store/StoreFront/UpdateStore/StoreManagement/AfterPurchaseTab";
+import { getStore } from "@/services/store";
+import { useParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import Loading from "@/components/Loading";
+import { toast } from "react-toastify";
+import { updateProduct, deleteProduct } from "@/services/product";
 
 const tabs = [
   { id: "orders", label: "Orders" },
   { id: "products", label: "Products" },
   { id: "customize", label: "Customize Storefront" },
-  { id: "discounts", label: "Discount Codes", badge: "NEW" },
+  { id: "discounts", label: "Discount Codes", badge: "COMING SOON" },
   { id: "delivery", label: "Delivery", badge: "1" },
   { id: "after-purchase", label: "After Purchase" },
 ];
 
 export default function StoreManagement() {
   const [activeTab, setActiveTab] = useState("orders");
+  const [store, setStore] = useState();
+  const { token } = useAuth();
+  const { id } = useParams();
+  const [loading, setLoading] = useState(true);
+
+  async function loadStore() {
+    try {
+      const store = await getStore(id, token);
+      setStore(store);
+      console.log(store);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    loadStore();
+  }, [id]);
+
+  async function handleUpdate(payload, token) {
+    try {
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async function handleProductDisplay(id, payload) {
+    try {
+      await updateProduct(id, payload, token);
+      toast(`Set Product Display to ${payload.display ? "On" : "Off"}`);
+      loadStore(); // reload the store
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async function handleProductDelete(id) {
+    try {
+      await deleteProduct(id, token);
+      loadStore();
+      toast("Product deleted");
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#0B0F1C] p-6 w-full">
+    <div className="min-h-screen bg-white/5 p-6 w-full">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-white">Test</h1>
+          <h1 className="text-2xl font-semibold text-white">
+            {store && store.storeName}
+          </h1>
           <div className="flex items-center gap-4">
-            <button className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
-              Preview
+            <button className="px-6 py-2 bg-gradient-to-r from-[#005BFE] to-[#00A1FE] text-white rounded-lg font-medium hover:opacity-90 transition-opacity relative group flex justify-center">
+              {/* Button glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#005BFE]/50 to-[#00A1FE]/50 opacity-0 group-hover:opacity-100 blur-xl rounded-lg transition-opacity" />
+              <span className="relative">Preview</span>
             </button>
-            <button className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+
+            <button className="px-6 py-2 bg-[#131B2C] border border-gray-800 text-gray-400 hover:text-white rounded-lg font-medium transition-colors">
               Copy Link
-            </button>
-            <button className="p-2 text-gray-300 hover:text-white transition-colors">
-              <EllipsisVerticalIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="border-b border-gray-800">
+        <nav className="border-b border-gray-800 max-w-full overflow-x-auto">
           <div className="flex space-x-8">
             {tabs.map((tab) => (
               <button
@@ -76,14 +132,29 @@ export default function StoreManagement() {
         </nav>
 
         {/* Content */}
-        <div className="mt-6 max-h-full overflow-y-auto">
-          {activeTab === "orders" && <OrdersTab />}
-          {activeTab === "products" && <ProductsTab />}
-          {activeTab === "customize" && <CustomizeTab />}
-          {activeTab === "discounts" && <DiscountTab />}
-          {activeTab === "delivery" && <DeliveryTab />}
-          {activeTab === "after-purchase" && <AfterPurchaseTab />}
-        </div>
+        {loading ? (
+          <div className="mt-6 max-h-full overflow-y-auto">
+            {activeTab === "orders" && <OrdersTab store={store} />}
+            {activeTab === "products" && (
+              <ProductsTab
+                store={store}
+                reloadStore={loadStore}
+                handleProductDisplay={handleProductDisplay}
+                handleProductDelete={handleProductDelete}
+              />
+            )}
+            {activeTab === "customize" && <CustomizeTab store={store} />}
+            {activeTab === "discounts" && <DiscountTab />}
+            {activeTab === "delivery" && <DeliveryTab />}
+            {activeTab === "after-purchase" && (
+              <AfterPurchaseTab store={store} handleUpdate={handleUpdate} />
+            )}
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <Loading />
+          </div>
+        )}
       </div>
     </div>
   );
