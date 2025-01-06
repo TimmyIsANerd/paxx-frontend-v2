@@ -82,6 +82,7 @@ export default function SendModal({ isOpen, onClose }) {
               placeholder="0.00"
               min={0}
               step={0.01}
+              required
             />
           </div>
           <div>
@@ -96,6 +97,7 @@ export default function SendModal({ isOpen, onClose }) {
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               className="w-full px-3 py-2 bg-[#1F2A3C] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
               <option value="usdc">USDC</option>
               <option value="solana">SOL</option>
@@ -115,6 +117,7 @@ export default function SendModal({ isOpen, onClose }) {
               onChange={(e) => setAddress(e.target.value)}
               className="w-full px-3 py-2 bg-[#1F2A3C] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter wallet address"
+              required
             />
           </div>
           <button
