@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
-export default function AfterPurchaseTab() {
+export default function AfterPurchaseTab({ store }) {
+  const [editable, setEditable] = useState(false);
+
   return (
     <div className="max-w-3xl space-y-8">
       <div className="space-y-6">
