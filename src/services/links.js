@@ -85,3 +85,13 @@ export async function deleteLink(id, token) {
     throw error;
   }
 }
+
+export async function getLinkForPage(id) {
+  try {
+    const response = await axios.get(`/api/v1/link-data/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
