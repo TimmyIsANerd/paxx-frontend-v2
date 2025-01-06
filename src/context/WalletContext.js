@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 export const WalletContext = createContext({
   walletAddress: "",
   dashboardData: null,
+  getLatestBalance: () => {},
 });
 
 export const WalletContextProvider = ({ children }) => {
@@ -21,12 +22,7 @@ export const WalletContextProvider = ({ children }) => {
       const data = await getWalletData(token);
       setDashboardData(data);
     } catch (error) {
-      if (error && !error.response) {
-        toast("Server Problems! ❌ Please try again later!");
-      }
-      if (error && error.response) {
-        toast(error.response.data.message);
-      }
+      console.error(error);
     }
   }
 
@@ -41,7 +37,9 @@ export const WalletContextProvider = ({ children }) => {
   }, []);
 
   return (
-    <WalletContext.Provider value={{ walletAddress, dashboardData }}>
+    <WalletContext.Provider
+      value={{ walletAddress, dashboardData, getLatestBalance: getBalances }}
+    >
       {children}
     </WalletContext.Provider>
   );
