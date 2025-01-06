@@ -43,7 +43,7 @@ export async function updateLink(id, payload, token) {
   }
 }
 
-export async function getAllLinks(payload) {
+export async function getAllLinks(token) {
   try {
     const response = await axios.get(`${baseURL}/api/v1/links`, {
       headers: {
@@ -58,15 +58,28 @@ export async function getAllLinks(payload) {
   }
 }
 
-export async function getLink(id, payload) {
+export async function getLink(id, token) {
   try {
     const response = await axios.get(`${baseURL}/api/v1/link/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
 
-    
+export async function deleteLink(id, token) {
+  try {
+    const response = await axios.delete(`${baseURL}/api/v1/link/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   } catch (error) {
     console.error(error);
     throw error;

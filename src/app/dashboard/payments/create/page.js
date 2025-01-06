@@ -91,7 +91,8 @@ export default function PaymentForm() {
     const payload = {
       ...formData,
       linkType: selectedType,
-      amount: formData.priceType === "fixed" ? amount : formData.minAmount,
+      amount:
+        formData.priceType === "fixed" ? formData.amount : formData.minAmount,
     };
 
     try {
@@ -193,7 +194,7 @@ export default function PaymentForm() {
             </div>
           </div>
         ) : (
-          <div className="bg-[#131B2C] rounded-lg shadow-lg p-5">
+          <div className="bg-[#131B2C] rounded-lg shadow-lg p-5 max-w-2xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold text-white">
                 Create a {selectedType} Payment Link
