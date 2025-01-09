@@ -19,6 +19,7 @@
     "@solana/web3.js": "^1.98.0",
     "axios": "^1.7.8",
     "date-fns": "^4.1.0",
+    "framer-motion": "^11.16.1",
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-colorful": "^5.6.1",
