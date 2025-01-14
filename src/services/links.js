@@ -88,7 +88,7 @@ export async function deleteLink(id, token) {
 
 export async function getLinkForPage(id) {
   try {
-    const response = await axios.get(`/api/v1/link-data/${id}`);
+    const response = await axios.get(`${baseURL}/api/v1/link-data/${id}`);
     return response.data;
   } catch (error) {
     console.error(error);

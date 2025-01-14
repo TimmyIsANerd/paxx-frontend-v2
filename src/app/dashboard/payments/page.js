@@ -15,7 +15,7 @@ export default function PaymentsPage() {
   useEffect(() => {
     document.title = "Paxx Payments | Payment Links";
     loadLinks();
-  }, []);
+  }, [token]);
 
   async function loadLinks() {
     setLoading(true);
@@ -55,7 +55,7 @@ export default function PaymentsPage() {
           <Loading />
         </div>
       ) : (
-        <DataTable links={links} handleDelete={handleDelete} />
+        <DataTable links={links} handleDelete={handleDelete} loadLinks={loadLinks} />
       )}
     </div>
   );
