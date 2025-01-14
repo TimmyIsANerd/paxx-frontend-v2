@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-export default function TestModeModal({ isOpen, onClose }) {
+export default function MaintenanceMode({ isOpen, onClose }) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -19,7 +19,7 @@ export default function TestModeModal({ isOpen, onClose }) {
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-white">
-                Test Mode Active
+                Payment Processing Maintenance
               </h2>
               <button
                 onClick={onClose}
@@ -30,8 +30,8 @@ export default function TestModeModal({ isOpen, onClose }) {
               </button>
             </div>
             <p className="text-gray-300 mb-4">
-              You are currently in test mode. Only testnet funds will be
-              processed. No real transactions will occur.
+              Payment processing features are currently undergoing maintenance.
+              Please check back later for updates.
             </p>
             <div className="flex justify-center">
               <button

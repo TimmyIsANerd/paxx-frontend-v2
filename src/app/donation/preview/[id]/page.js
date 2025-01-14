@@ -12,19 +12,6 @@ import Loading from "@/components/Loading";
 import { useTokenBalance } from "@/hooks/web3/useTokenBalance";
 import { toast } from "react-toastify";
 import TestModeModal from "@/components/Modal/TestMode";
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import {
-  getOrCreateAssociatedTokenAccount,
-  createTransferInstruction,
-} from "@solana/spl-token";
-import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
 import WalletConnectModal from "@/components/Modal/WalletConnectModal";
 
 const helios_key = process.env.NEXT_PUBLIC_HELIOS_API_KEY;
@@ -36,7 +23,7 @@ const CONFIG_TOKEN = {
   TESTNET_USDC: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
 };
 
-export default function DonationPaymentPage() {
+export default function DonationPaymentPreviewPage() {
   const [pageData, setPageData] = useState();
   const [customAmount, setCustomAmount] = useState("");
   const [isCustom, setIsCustom] = useState(false);
@@ -52,6 +39,7 @@ export default function DonationPaymentPage() {
   const [showWalletSelectModal, setshowWalletSelectModal] = useState(
     !connected
   );
+  const [showPreviewAlert, setPreviewAlert] = useState(true);
 
   const {
     balance: usdcBalance,
@@ -83,130 +71,16 @@ export default function DonationPaymentPage() {
     loadPage();
   }, [getUUIDFromPath(param)]);
 
-  const handlePayment = async () => {
-    const paymentConnection = new Connection(rpc);
-    if (!publicKey) {
-      toast.error("Please connect your wallet.");
-      return;
-    }
+  const handlePayment = () => {
+    const redirectAfterPayment = pageData?.redirectAfterPayment;
+    toast("Transaction Successful");
 
-    // Determine the amount to transfer
-    const amountToTransfer =
-      customAmount && !isNaN(customAmount) && Number(customAmount) > 0
-        ? Math.round(Number(customAmount) * 10 ** 6) // Use custom amount if valid
-        : Math.round(Number(pageData?.amount) * 10 ** 6); // Otherwise, use pageData amount
-
-    if (amountToTransfer <= 0) {
-      toast.error("Please enter a valid amount.");
-      return;
-    }
-
-    try {
-      const usdcMint = new PublicKey(
-        pageData?.userMode === "live"
-          ? CONFIG_TOKEN.MAINNET_USDC
-          : CONFIG_TOKEN.TESTNET_USDC
-      );
-
-      const revenueWallet = new PublicKey(REVENUE_WALLET);
-      const merchantWallet = new PublicKey(pageData?.merchantWalletAddress);
-
-      // Check if merchant wallet is defined
-      if (!merchantWallet) {
-        toast.error("Merchant wallet is not defined.");
-        return;
+    setTimeout(() => {
+      if (redirectAfterPayment) {
+        toast("Redirecting...");
       }
-
-      // Get or create token accounts
-      const userTokenAccount = await getOrCreateAssociatedTokenAccount(
-        paymentConnection,
-        publicKey,
-        usdcMint,
-        publicKey, // User's wallet address,
-        true
-      );
-
-      const revenueTokenAccount = await getOrCreateAssociatedTokenAccount(
-        paymentConnection,
-        publicKey,
-        usdcMint,
-        revenueWallet,
-        true
-      );
-
-      const merchantTokenAccount = await getOrCreateAssociatedTokenAccount(
-        paymentConnection,
-        publicKey,
-        usdcMint,
-        merchantWallet,
-        true
-      );
-
-      // Log token account addresses for debugging
-      console.log("User Token Account:", userTokenAccount.address.toString());
-      console.log(
-        "Revenue Token Account:",
-        revenueTokenAccount.address.toString()
-      );
-      console.log(
-        "Merchant Token Account:",
-        merchantTokenAccount.address.toString()
-      );
-
-      // Calculate amounts
-      const revenueAmount = Math.floor(amountToTransfer * 0.025);
-      const merchantAmount = amountToTransfer - revenueAmount;
-
-      // Create transfer instructions
-      const transferToRevenue = createTransferInstruction(
-        userTokenAccount.address, // User's token account (source)
-        revenueTokenAccount.address, // Revenue token account (destination)
-        publicKey,
-        revenueAmount,
-        [],
-        usdcMint
-      );
-
-      const transferToMerchant = createTransferInstruction(
-        userTokenAccount.address, // User's token account (source)
-        merchantTokenAccount.address, // Merchant token account (destination)
-        publicKey,
-        merchantAmount,
-        [],
-        usdcMint
-      );
-
-      // Create the transaction
-      const transaction = new Transaction().add(
-        transferToRevenue,
-        transferToMerchant
-      );
-
-      // Fetch the recent blockhash and set fee payer
-      transaction.recentBlockhash = (
-        await connection.getLatestBlockhash()
-      ).blockhash;
-      transaction.feePayer = publicKey;
-
-      // Sign and send the transaction
-      const signedTransaction = await wallet.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(
-        signedTransaction.serialize()
-      );
-
-      // Confirm the transaction
-      const confirmation = await connection.getSignatureStatuses([signature]);
-      if (confirmation.value[0]?.confirmationStatus === "finalized") {
-        toast.success("Payment successful!");
-      } else {
-        toast.error("Payment not confirmed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error(
-        "Payment processing for USDC Failed. Please try again Later."
-      );
-    }
+    }, 3000);
+    push(redirectAfterPayment);
   };
 
   const handleConnect = () => {
@@ -236,7 +110,7 @@ export default function DonationPaymentPage() {
         walletAddress={publicKey?.toString()}
         tokenBalance={usdcBalance}
         currentWalletBalance={0}
-        description="Your generous donation helps us continue our mission."
+        description={pageData?.description}
       >
         <form className="space-y-6">
           {showCustomAmount && (

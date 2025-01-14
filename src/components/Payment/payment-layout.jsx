@@ -18,8 +18,12 @@ export function PaymentLayout({
         <img src="/images/logo/paxx-logo.png" className="" alt="" />
       </div>
       <div className="flex p-6 md:flex-row flex-col items-center gap-3 justify-center">
-        <div className="max-w-2xl shadow-2xl">
-          <img src={img} alt="" />
+        <div className="max-w-2xl shadow-2xl max-h-full">
+          <img
+            src={img}
+            alt=""
+            className="w-auto h-full object-contain md:block hidden"
+          />
         </div>
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>

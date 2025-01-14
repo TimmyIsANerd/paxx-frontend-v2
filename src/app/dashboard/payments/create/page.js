@@ -75,8 +75,8 @@ export default function PaymentForm() {
         ...prev,
         priceType: "fixed",
         amount: "",
-        minAmount: "",
-        maxAmount: "",
+        minAmount: 0,
+        maxAmount: 0,
       }));
     }
   };
@@ -115,8 +115,8 @@ export default function PaymentForm() {
       ...formData,
       priceType: type,
       amount: "",
-      minAmount: "",
-      maxAmount: "",
+      minAmount: 0,
+      maxAmount: 0,
     });
   };
 
@@ -356,7 +356,7 @@ export default function PaymentForm() {
                     htmlFor="amount"
                     className="block text-sm font-medium text-gray-300"
                   >
-                    Amount
+                    Amount  
                   </label>
                   <input
                     id="amount"
