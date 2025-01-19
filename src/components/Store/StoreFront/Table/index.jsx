@@ -14,6 +14,8 @@ import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { MdContentCopy } from "react-icons/md";
+import { storeBaseUrl } from "@/config";
 
 export default function StoreTable() {
   const [stores, setStores] = useState([]);
@@ -64,6 +66,11 @@ export default function StoreTable() {
     }
   };
 
+  const handleCopy = (url) => {
+    navigator.clipboard.writeText(url);
+    toast("Link copied");
+  };
+
   return (
     <>
       {!loading ? (
@@ -96,7 +103,6 @@ export default function StoreTable() {
                       <tr
                         key={store.id}
                         className="border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors relative overflow-clip hover:cursor-pointer"
-                        onClick={() => push(`/dashboard/store/${store.id}`)}
                       >
                         <td className="px-6 py-4 hover:cursor-pointer">
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -152,6 +158,16 @@ export default function StoreTable() {
                               className="p-1 hover:text-red-500 transition-colors"
                             >
                               <TrashIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              className="p-1 hover:text-blue-500 transition-colors"
+                              onClick={() =>
+                                handleCopy(
+                                  `${storeBaseUrl}/${store.storeLink}`
+                                )
+                              }
+                            >
+                              <MdContentCopy className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
