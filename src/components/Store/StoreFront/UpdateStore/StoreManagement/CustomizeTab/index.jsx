@@ -22,14 +22,14 @@ export default function CustomizeTab({ store }) {
   const [customColor, setCustomColor] = useState("#786B9C");
   const [editShareableLink, setEditShareableLink] = useState(false);
   const [contactInfo, setContactInfo] = useState({
-    whatsapp: "7059381812",
-    phone: "9164183371",
-    email: "adefeyitimi@gmail.com",
+    whatsapp: "",
+    phone: "",
+    email: "",
   });
   const [socialMedia, setSocialMedia] = useState({
-    twitter: "@lordaethar",
-    instagram: "@lordaethar",
-    facebook: "timmyzorin",
+    twitter: "",
+    instagram: "",
+    facebook: "",
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState("+234");
