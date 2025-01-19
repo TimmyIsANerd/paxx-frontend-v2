@@ -109,3 +109,62 @@ export async function switchStatus(id, payload, token) {
     throw error;
   }
 }
+
+export async function addDeliveryFee(storeId, payload, token) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/api/v1/store/delivery/${storeId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+
+    throw error;
+  }
+}
+
+export async function updateDeliveryFee(feeId, payload, token) {
+  try {
+    const response = await axios.patch(
+      `${baseURL}/api/v1/store/delivery/${feeId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+
+    throw error;
+  }
+}
+
+export async function deleteDeliveryFee(feeId, token) {
+  try {
+    const response = await axios.delete(
+      `${baseURL}/api/v1/store/delivery/${feeId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+
+    throw error;
+  }
+}
