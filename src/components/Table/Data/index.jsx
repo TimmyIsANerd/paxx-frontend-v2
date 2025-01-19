@@ -7,7 +7,7 @@ import UpdateModal from "@/components/UpdateModal";
 import { useAuth } from "@/context/AuthContext";
 import { getLink, updateLink } from "@/services/links";
 import { MdContentCopy } from "react-icons/md";
-import { baseUrl } from "@/config";
+import { payBaseUrl } from "@/config";
 import { toast } from "react-toastify";
 
 export default function DataTable({ links, handleDelete, loadLinks }) {
@@ -133,7 +133,7 @@ export default function DataTable({ links, handleDelete, loadLinks }) {
                         className="p-1 hover:text-blue-500 transition-colors"
                         onClick={() =>
                           handleCopy(
-                            `${baseUrl}/link/${
+                            `${payBaseUrl}/link/${
                               row.customLink ? row.customLink : row.id
                             }`
                           )
