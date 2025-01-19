@@ -50,7 +50,7 @@ export default function PaymentForm() {
     minAmount: 0,
     maxAmount: 0,
     description: "",
-    image: null,
+    image: "",
   });
   const fileInputRef = useRef(null);
   const { token } = useAuth();
