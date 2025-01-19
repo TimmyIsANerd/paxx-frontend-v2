@@ -22,30 +22,27 @@ export default function NewStorefrontModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowMaintenance(true);
-    return;
-    // e.preventDefault();
-    // setLoading(true);
+    setLoading(true);
 
-    // const payload = {
-    //   storeName: formData.name,
-    //   defaultCurrency: formData.currency,
-    //   storeLink: formData.storeLink,
-    // };
+    const payload = {
+      storeName: formData.name,
+      defaultCurrency: formData.currency,
+      storeLink: formData.storeLink,
+    };
 
-    // try {
-    //   await createStore(payload, token);
-    //   toast("Storefront Created Successfully");
-    //   window.location.reload();
-    // } catch (error) {
-    //   if (error && error.response) {
-    //     toast(error.response.data.message);
-    //   } else {
-    //     toast("Failed to Create Store... Please Try Again Later");
-    //   }
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      await createStore(payload, token);
+      toast("Storefront Created Successfully");
+      window.location.reload();
+    } catch (error) {
+      if (error && error.response) {
+        toast(error.response.data.message);
+      } else {
+        toast("Failed to Create Store... Please Try Again Later");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
