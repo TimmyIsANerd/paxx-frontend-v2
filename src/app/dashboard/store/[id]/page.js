@@ -75,8 +75,19 @@ export default function StoreManagement() {
     }
   }
 
+  function handleCopyLink(src) {
+    navigator.clipboard
+      .writeText(src)
+      .then(() => {
+        toast("Preview Link Copied");
+      })
+      .catch((error) => {
+        console.error("Failed to copy link: ", error);
+      });
+  }
+
   return (
-    <div className="min-h-screen bg-white/5 p-6 w-full">
+    <div className="min-h-screen max-h-screen bg-white/5 p-6 w-full  overflow-y-auto">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -87,10 +98,13 @@ export default function StoreManagement() {
             <button className="px-6 py-2 bg-gradient-to-r from-[#005BFE] to-[#00A1FE] text-white rounded-lg font-medium hover:opacity-90 transition-opacity relative group flex justify-center">
               {/* Button glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#005BFE]/50 to-[#00A1FE]/50 opacity-0 group-hover:opacity-100 blur-xl rounded-lg transition-opacity" />
-              <span className="relative">Preview</span>
+              <span className="relative text-sm">Preview</span>
             </button>
 
-            <button className="px-6 py-2 bg-[#131B2C] border border-gray-800 text-gray-400 hover:text-white rounded-lg font-medium transition-colors">
+            <button
+              className="px-6 py-2 bg-[#131B2C] border border-gray-800 text-gray-400 hover:text-white rounded-lg font-medium transition-colors text-sm"
+              onClick={() => handleCopyLink(store.storeLink)}
+            >
               Copy Link
             </button>
           </div>
@@ -133,7 +147,7 @@ export default function StoreManagement() {
 
         {/* Content */}
         {loading ? (
-          <div className="mt-6 max-h-full overflow-y-auto">
+          <div className="mt-6 h-full">
             {activeTab === "orders" && <OrdersTab store={store} />}
             {activeTab === "products" && (
               <ProductsTab
@@ -145,9 +159,15 @@ export default function StoreManagement() {
             )}
             {activeTab === "customize" && <CustomizeTab store={store} />}
             {activeTab === "discounts" && <DiscountTab />}
-            {activeTab === "delivery" && <DeliveryTab />}
+            {activeTab === "delivery" && (
+              <DeliveryTab reloadStore={loadStore} store={store} />
+            )}
             {activeTab === "after-purchase" && (
-              <AfterPurchaseTab store={store} handleUpdate={handleUpdate} />
+              <AfterPurchaseTab
+                store={store}
+                handleUpdate={handleUpdate}
+                reloadStore={loadStore}
+              />
             )}
           </div>
         ) : (
