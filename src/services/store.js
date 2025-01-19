@@ -59,7 +59,7 @@ export async function createStore(payload, token) {
 
 export async function updateStore(id, payload, token) {
   try {
-    const response = await axios.put(
+    const response = await axios.patch(
       `${baseURL}/api/v1/store/update/${id}`,
       payload,
       {
