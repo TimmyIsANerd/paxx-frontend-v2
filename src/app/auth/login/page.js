@@ -41,7 +41,16 @@ export default function LoginPage() {
         toast("Server Problems! ❌ Please try again later!");
       }
       if (error && error.response) {
-        toast(error.response.data.message);
+        if (
+          error.response.data.message ===
+          "Please verify your email before logging in"
+        ) {
+          storeProfile(error.response.data.user);
+          toast(error.response.data.message);
+          push("/auth/verify-otp");
+        } else {
+          toast(error.response.data.message);
+        }
       }
     } finally {
       setLoading(false);
