@@ -1,410 +1,314 @@
-"use client";
-
-import { useState, useRef } from "react";
-import {
-  BanknotesIcon,
-  ArrowPathIcon,
-  GiftIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { FaImage } from "react-icons/fa";
+"use client"
+import { useState } from "react";
 import { toast } from "react-toastify";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import QRCode from "react-qr-code";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import Link from 'next/link';
 
-const paymentTypes = [
-  {
-    id: "one-time",
-    title: "One-Time Payment",
-    description:
-      "Create a payment link to receive one-time payments from your customers, with the flexibility to choose your preferred cryptocurrency.",
-    icon: BanknotesIcon,
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_DAS_API_URL || 'https://paxx-das.onrender.com',
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+  }
+});
+
+api.interceptors.request.use(
+  (config) => {
+    console.log('Request Config:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      data: config.data
+    });
+    return config;
   },
-  {
-    id: "subscription",
-    title: "Subscription",
-    description:
-      "For recurring payments or subscription plans, generate a custom link tailored to your needs, allowing payments in your selected crypto.",
-    icon: ArrowPathIcon,
+  (error) => {
+    console.error('Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => {
+    console.log('Response:', response);
+    return response;
   },
-  {
-    id: "donation",
-    title: "Donation",
-    description:
-      "Easily receive one-time donations for charitable causes or group goals through donation links, all in cryptocurrency.",
-    icon: GiftIcon,
-  },
-];
+  (error) => {
+    console.error('Response Error:', {
+      message: error.message,
+      response: error.response,
+      request: error.request,
+      config: error.config
+    });
+    return Promise.reject(error);
+  }
+);
+
+// Validation helpers
+const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+const isValidBase58 = (str) => base58Regex.test(str);
+
+const isValidKeypairString = (str) => {
+  try {
+    const keypairArray = JSON.parse(str);
+    return Array.isArray(keypairArray) && 
+           keypairArray.length === 64 && 
+           keypairArray.every(num => typeof num === 'number' && num >= 0 && num <= 255);
+  } catch {
+    return false;
+  }
+};
+
+function PaymentSuccessModal({ isOpen, onClose, paymentLink }) {
+  const [copied, setCopied] = useState(false);
+
+  if (!isOpen || !paymentLink) return null;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(paymentLink.url);
+      setCopied(true);
+      toast.success("Link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#131B2C] rounded-lg p-4 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-white">Payment Link Created!</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-[#0B0F1C] rounded-lg p-3">
+            <p className="text-xs text-gray-400">Payment Link</p>
+            <div className="flex items-center justify-between">
+              <p className="text-white text-sm truncate">{paymentLink.url}</p>
+              <button
+                onClick={handleCopy}
+                className="ml-2 px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-center bg-white p-3 rounded-lg">
+            <QRCode
+              value={paymentLink.url}
+              size={150}
+              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+              viewBox="0 0 256 256"
+            />
+          </div>
+
+          <div className="bg-[#0B0F1C] rounded-lg p-3">
+            <p className="text-xs text-gray-400">Transaction Signature</p>
+            <p className="text-white text-xs break-all">{paymentLink.signature}</p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PaymentForm() {
-  const [step, setStep] = useState(1);
-  const [selectedType, setSelectedType] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdLink, setCreatedLink] = useState(null);
   const [formData, setFormData] = useState({
-    pageName: "",
-    priceType: "fixed",
-    currency: "USDC",
-    amount: "",
-    minAmount: "",
-    maxAmount: "",
-    description: "",
-    image: null,
-  });
-  const fileInputRef = useRef(null);
-
-  const handleTypeSelect = (type) => {
-    if (type === "subscription") {
-      toast.info("Feature in Development", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
-    }
-    setSelectedType(type);
-    if (type !== "donation") {
-      setFormData((prev) => ({
-        ...prev,
-        priceType: "fixed",
-        amount: "",
-        minAmount: "",
-        maxAmount: "",
-      }));
-    }
-  };
-
-  const handleNext = () => {
-    setStep(2);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log(formData);
-  };
-
-  const handlePriceTypeChange = (type) => {
-    setFormData({
-      ...formData,
-      priceType: type,
+    walletAddress: "",
+    walletKeypair: "",
+    options: {
       amount: "",
-      minAmount: "",
-      maxAmount: "",
-    });
+      network: "devnet"
+    }
+  });
+
+  const validateForm = () => {
+    if (!isValidBase58(formData.walletAddress)) {
+      throw new Error("Invalid wallet address format");
+    }
+
+    if (!isValidKeypairString(formData.walletKeypair)) {
+      throw new Error("Invalid keypair format. Must be a valid array of 64 numbers");
+    }
+
+    if (isNaN(Number(formData.options.amount)) || Number(formData.options.amount) <= 0) {
+      throw new Error("Amount must be a positive number");
+    }
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 3 * 1024 * 1024) {
-        toast.error("File size exceeds max of 3MB", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        e.target.value = null;
-      } else {
-        setFormData({ ...formData, image: file });
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      validateForm();
+
+      // Prepare the payload exactly as in a successful Insomnia request
+      const payload = {
+        walletAddress: formData.walletAddress,
+        walletKeypair: formData.walletKeypair, 
+        options: {
+          amount: Number(formData.options.amount),
+          network: formData.options.network
+        }
+      };
+
+      // Make the API request
+      const { data } = await api.post("/das/create/tiplink", payload);
+
+      const linkWithTimestamp = {
+        ...data,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save to localStorage
+      const savedLinks = JSON.parse(localStorage.getItem("paymentLinks") || "[]");
+      localStorage.setItem(
+        "paymentLinks",
+        JSON.stringify([linkWithTimestamp, ...savedLinks])
+      );
+
+      setCreatedLink(data);
+      setShowSuccessModal(true);
+      
+      // Reset form
+      setFormData({
+        walletAddress: "",
+        walletKeypair: "",
+        options: {
+          amount: "",
+          network: "devnet"
+        }
+      });
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create payment link";
+      toast.error(errorMessage);
+      console.error("Error creating payment link:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="w-full py-6">
-      <div className="max-w-4xl mx-auto">
-        {step === 1 ? (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-white text-center mb-8">
-              Select a payment link type to continue
-            </h1>
-            <div className="grid md:grid-cols-3 gap-6">
-              {paymentTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className={`bg-[#131B2C] rounded-lg p-6 cursor-pointer transition-all ${
-                    selectedType === type.id
-                      ? "ring-2 ring-purple-500"
-                      : "hover:bg-[#1a2235]"
-                  }`}
-                  onClick={() => handleTypeSelect(type.id)}
-                >
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                      <type.icon className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-white">
-                      {type.title}
-                    </h3>
-                    <p className="text-sm text-gray-400">{type.description}</p>
-                    <button
-                      className={`w-full py-2 px-4 rounded-md transition-colors ${
-                        selectedType === type.id
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-700 text-gray-300"
-                      }`}
-                    >
-                      {selectedType === type.id ? "Selected" : "Select"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={handleNext}
-                disabled={!selectedType}
-                className="bg-blue-500 text-white px-6 py-3 rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 transition-colors"
-              >
-                Create Payment Link
-              </button>
-            </div>
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="bg-[#131B2C] rounded-lg p-8 shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-white">
+              Create Payment Link
+            </h2>
+            <Link
+              href="/dashboard/payments/history"
+              className="px-4 py-2 bg-[#1F2937] text-white text-sm rounded-md hover:bg-[#374151] transition-colors flex items-center gap-2"
+            >
+              View History
+            </Link>
           </div>
-        ) : (
-          <div className="bg-[#131B2C] rounded-lg p-8 shadow-lg">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-white">
-                Create a{" "}
-                {selectedType === "one-time"
-                  ? "One-Time Payment"
-                  : selectedType === "subscription"
-                  ? "Subscription"
-                  : "Donation"}{" "}
-                Payment Link
-              </h2>
-              <button
-                onClick={() => setStep(1)}
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Close form"
-              >
-                <XMarkIcon className="w-6 h-6" />
-              </button>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-300">
+                Wallet Address
+              </label>
+              <input
+                type="text"
+                value={formData.walletAddress}
+                onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
+                className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="Enter your Solana wallet address"
+                required
+              />
             </div>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-4">
-                <label
-                  htmlFor="pageName"
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Page Name
-                </label>
-                <input
-                  id="pageName"
-                  type="text"
-                  value={formData.pageName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pageName: e.target.value })
-                  }
-                  className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                  placeholder="Enter page name"
-                />
-              </div>
-              <div className="space-y-4">
-                <label
-                  htmlFor="currency"
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Currency
-                </label>
-                <select
-                  id="currency"
-                  value={formData.currency}
-                  onChange={(e) =>
-                    setFormData({ ...formData, currency: e.target.value })
-                  }
-                  className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                >
-                  <option value="USDC">USDC</option>
-                  <option value="SOL">SOL</option>
-                </select>
-              </div>
-              {selectedType === "donation" && (
-                <>
-                  <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-300">
-                      Price Type
-                    </label>
-                    <div className="flex space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => handlePriceTypeChange("fixed")}
-                        className={`flex-1 py-2 px-4 rounded-md transition-colors ${
-                          formData.priceType === "fixed"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                        }`}
-                      >
-                        Fixed Price
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handlePriceTypeChange("custom")}
-                        className={`flex-1 py-2 px-4 rounded-md transition-colors ${
-                          formData.priceType === "custom"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                        }`}
-                      >
-                        Custom Amount
-                      </button>
-                    </div>
-                  </div>
-                  {formData.priceType === "fixed" ? (
-                    <div className="space-y-4">
-                      <label
-                        htmlFor="amount"
-                        className="block text-sm font-medium text-gray-300"
-                      >
-                        Amount
-                      </label>
-                      <input
-                        id="amount"
-                        type="number"
-                        value={formData.amount}
-                        onChange={(e) =>
-                          setFormData({ ...formData, amount: e.target.value })
-                        }
-                        placeholder="0.00"
-                        className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <label
-                          htmlFor="minAmount"
-                          className="block text-sm font-medium text-gray-300"
-                        >
-                          Minimum Amount
-                        </label>
-                        <input
-                          id="minAmount"
-                          type="number"
-                          value={formData.minAmount}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              minAmount: e.target.value,
-                            })
-                          }
-                          placeholder="0.00"
-                          className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="maxAmount"
-                          className="block text-sm font-medium text-gray-300"
-                        >
-                          Maximum Amount (optional)
-                        </label>
-                        <input
-                          id="maxAmount"
-                          type="number"
-                          value={formData.maxAmount}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              maxAmount: e.target.value,
-                            })
-                          }
-                          placeholder="0.00"
-                          className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-              {selectedType !== "donation" && (
-                <div className="space-y-4">
-                  <label
-                    htmlFor="amount"
-                    className="block text-sm font-medium text-gray-300"
-                  >
-                    Amount
-                  </label>
-                  <input
-                    id="amount"
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: e.target.value })
-                    }
-                    placeholder="0.00"
-                    className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                  />
-                </div>
-              )}
-              <div className="space-y-4">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-300"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={4}
-                  className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
-                  placeholder="Enter description"
-                />
-              </div>
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-300">
-                  Image
-                </label>
-                <div
-                  className="border-2 border-dashed border-gray-700 rounded-lg p-8 transition-all hover:border-purple-500 focus-within:border-purple-500 cursor-pointer"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <div className="flex flex-col items-center">
-                    <FaImage className="w-12 h-12 text-gray-400 mb-4" />
-                    <p className="text-sm text-gray-400 text-center mb-2">
-                      {formData.image
-                        ? formData.image.name
-                        : "Click to Upload Image"}
-                    </p>
-                    <p className="text-xs text-gray-500 text-center">
-                      This image will be displayed on the social platforms where
-                      this link is shared.
-                    </p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-6 py-2 border border-gray-600 rounded-md text-gray-300 hover:bg-gray-700 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-                >
-                  Create Link
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-300">
+                Wallet Keypair
+              </label>
+              <textarea
+                value={formData.walletKeypair}
+                onChange={(e) => setFormData({ ...formData, walletKeypair: e.target.value })}
+                className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 h-24"
+                placeholder="Enter your wallet keypair array (e.g., [183,215,75,...])"
+                required
+              />
+              <p className="text-xs text-gray-400">
+                Enter the keypair as an array of 64 numbers, exactly as shown in the example
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-300">
+                Amount
+              </label>
+              <input
+                type="number"
+                step="any"
+                value={formData.options.amount}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  options: { ...formData.options, amount: e.target.value }
+                })}
+                className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                placeholder="0.00"
+                required
+              />
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-300">
+                Network
+              </label>
+              <select
+                value={formData.options.network}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  options: { ...formData.options, network: e.target.value }
+                })}
+                className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="devnet">Devnet</option>
+                <option value="mainnet">Mainnet</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Creating..." : "Create Payment Link"}
+            </button>
+          </form>
+        </div>
       </div>
+
+      <PaymentSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        paymentLink={createdLink}
+      />
     </div>
   );
 }
