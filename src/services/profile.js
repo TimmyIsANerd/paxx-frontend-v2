@@ -26,6 +26,8 @@ export async function getProfile(bearerToken) {
         Authorization: `Bearer ${bearerToken}`,
       },
     });
+
+    return response;
   } catch (error) {
     console.error(error);
 
