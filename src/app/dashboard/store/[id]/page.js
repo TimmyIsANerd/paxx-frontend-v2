@@ -157,7 +157,9 @@ export default function StoreManagement() {
                 handleProductDelete={handleProductDelete}
               />
             )}
-            {activeTab === "customize" && <CustomizeTab store={store} />}
+            {activeTab === "customize" && (
+              <CustomizeTab store={store} reloadStore={loadStore} />
+            )}
             {activeTab === "discounts" && <DiscountTab />}
             {activeTab === "delivery" && (
               <DeliveryTab reloadStore={loadStore} store={store} />

@@ -14,7 +14,9 @@ import { addProduct } from "@/services/product";
 import { useAuth } from "@/context/AuthContext";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
+import { MdContentCopy } from "react-icons/md";
 import Link from "next/link"; 
+
 
 const products = [
   {
@@ -206,6 +208,18 @@ export default function ProductsTab({
                       className="p-1 hover:text-red-500 transition-colors"
                     >
                       <TrashIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-1 hover:text-blue-500 transition-colors"
+                      onClick={() =>
+                        handleCopy(
+                          `${payBaseUrl}/link/${
+                            product.shareableURL ? product.shareableURL : product.id
+                          }`
+                        )
+                      }
+                    >
+                      <MdContentCopy className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
