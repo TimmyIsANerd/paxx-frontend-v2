@@ -83,7 +83,10 @@ export default function Navbar() {
                 {item.name}
               </a>
             ))}
-            <button className="flex items-center gap-3 px-3 py-2 rounded-md font-medium text-gray-300 hover:text-white hover:bg-[#131B2C]">
+            <button
+              className="flex items-center gap-3 px-3 py-2 rounded-md font-medium text-gray-300 hover:text-white hover:bg-[#131B2C]"
+              onClick={logOut}
+            >
               <ArrowRightOnRectangleIcon className="h-5 w-5" />
               Logout
             </button>
