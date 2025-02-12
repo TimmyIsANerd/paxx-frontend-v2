@@ -5,26 +5,27 @@ import {
   HomeIcon,
   CreditCardIcon,
   ArrowRightOnRectangleIcon,
+  ArrowsRightLeftIcon,
   Cog6ToothIcon,
   ShoppingBagIcon,
   Bars3Icon,
   XMarkIcon,
   BellIcon,
   MagnifyingGlassIcon,
-  BanknotesIcon,
 } from "@heroicons/react/24/outline";
+import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
-  { name: "Dashboard", icon: HomeIcon, href: "#" },
-  { name: "Payments", icon: CreditCardIcon, href: "#" },
-  { name: "Transactions", icon: BanknotesIcon, href: "#" },
-  { name: "Store", icon: ShoppingBagIcon, href: "#" },
-  { name: "Settings", icon: Cog6ToothIcon, href: "#" },
-  { name: "Logout", icon: ArrowRightOnRectangleIcon, href: "#" },
+  { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
+  { name: "Payments", icon: CreditCardIcon, href: "/dashboard/payments" },
+  { name: "Payouts", icon: ArrowsRightLeftIcon, href: "/dashboard/payouts" },
+  { name: "Store", icon: ShoppingBagIcon, href: "/dashboard/store" },
+  { name: "Settings", icon: Cog6ToothIcon, href: "/dashboard/settings" },
 ];
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { logOut } = useAuth();
 
   return (
     <nav className="bg-[#0B0F1C] text-white md:hidden">
@@ -32,8 +33,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo and brand name (visible on all screen sizes) */}
           <div className="flex-shrink-0 flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-400 rounded-lg" />
-            <span className="ml-2 text-lg font-semibold">Dashdark X</span>
+            <img
+              src="/images/logo/paxx-logo.png"
+              className="w-[45%] h-[45%]"
+              alt=""
+            />
+            {/* <span className="ml-2 text-lg font-semibold">Dashdark X</span> */}
           </div>
 
           {/* Desktop menu items (hidden on mobile) */}
@@ -78,6 +83,13 @@ export default function Navbar() {
                 {item.name}
               </a>
             ))}
+            <button
+              className="flex items-center gap-3 px-3 py-2 rounded-md font-medium text-gray-300 hover:text-white hover:bg-[#131B2C]"
+              onClick={logOut}
+            >
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              Logout
+            </button>
           </div>
         </div>
       )}

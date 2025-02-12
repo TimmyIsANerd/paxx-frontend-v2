@@ -11,6 +11,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
   { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
@@ -18,11 +19,14 @@ const navigation = [
   { name: "Payouts", icon: ArrowsRightLeftIcon, href: "/dashboard/payouts" },
   { name: "Store", icon: ShoppingBagIcon, href: "/dashboard/store" },
   { name: "Settings", icon: Cog6ToothIcon, href: "/dashboard/settings" },
-  { name: "Logout", icon: ArrowRightOnRectangleIcon, href: "/logout" },
 ];
 
 export default function Sidebar() {
   const [activeItem, setActiveItem] = useState("Dashboard");
+  const { logOut } = useAuth();
+
+
+
 
   return (
     <div className="md:flex h-screen w-64 flex-col bg-[#0B0F1C] hidden">
@@ -74,12 +78,24 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        <button
+          className={`group relative flex items-center px-3 py-2 rounded-lg transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5 w-full`}
+          onClick={logOut}
+        >
+          <div className="relative flex items-center">
+            <ArrowRightOnRectangleIcon
+              className={`mr-3 h-5 w-5 transition-colors }`}
+            />
+
+            <span className="font-medium">Logout</span>
+          </div>
+        </button>
       </nav>
 
       {/* User Profile */}
       <div className="border-t border-white/5 p-3">
         <Link
-          href="/profile"
+          href="/dashboard/settings"
           className="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
         >
           <div className="relative">

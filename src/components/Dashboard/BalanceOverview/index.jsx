@@ -9,6 +9,9 @@ import {
 import SendModal from "./SendModal";
 import ReceiveModal from "./ReceiveModal";
 import { toast } from "react-toastify";
+import { useAuth } from "@/context/AuthContext";
+import { useWallet } from "@/context/WalletContext";
+import Loading from "@/components/Loading";
 
 const actions = [
   {
@@ -31,6 +34,8 @@ const actions = [
 export default function BalanceOverview() {
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
+  const { user } = useAuth();
+  const { dashboardData: dashboard } = useWallet();
 
   const handleActionClick = (label) => {
     if (label === "Send") setSendModalOpen(true);
@@ -52,13 +57,17 @@ export default function BalanceOverview() {
                 Total Balance (USDC)
               </h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">$12,456</span>
-                <span className="text-lg text-gray-400">.89</span>
+                <span className="text-4xl font-bold text-white">
+                  ${dashboard ? Number(dashboard.USDCBalance).toFixed(0) : ""}
+                </span>
+                <span className="text-lg text-gray-400">
+                  .{dashboard ? dashboard.USDCBalance.slice(-2) : ""}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500" />
                 <span className="text-sm text-green-500">
-                  +2.4% from last month
+                  {dashboard ? dashboard.percentageIncreaseUSDC : ""}% from last month
                 </span>
               </div>
             </div>
@@ -68,12 +77,16 @@ export default function BalanceOverview() {
                 Total Balance (SOL)
               </h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">146.25</span>
+                <span className="text-4xl font-bold text-white">
+                  {dashboard ? dashboard.totalSolBalance : ""}
+                </span>
                 <span className="text-lg text-gray-400">SOL</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-sm text-blue-500">≈ $8,775.00 USD</span>
+                <span className="text-sm text-blue-500">
+                  ≈ ${dashboard ? dashboard.totalSolBalanceInUSD : ""}{" "}
+                </span>
               </div>
             </div>
           </div>
@@ -112,6 +125,7 @@ export default function BalanceOverview() {
       <ReceiveModal
         isOpen={receiveModalOpen}
         onClose={() => setReceiveModalOpen(false)}
+        walletAddress={user ? user.wallet : ""}
       />
     </div>
   );

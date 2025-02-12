@@ -41,7 +41,16 @@ export default function LoginPage() {
         toast("Server Problems! ❌ Please try again later!");
       }
       if (error && error.response) {
-        toast(error.response.data.message);
+        if (
+          error.response.data.message ===
+          "Please verify your email before logging in"
+        ) {
+          storeProfile(error.response.data.user);
+          toast(error.response.data.message);
+          push("/auth/verify-otp");
+        } else {
+          toast(error.response.data.message);
+        }
       }
     } finally {
       setLoading(false);
@@ -80,7 +89,7 @@ export default function LoginPage() {
                   width="25"
                   height="25"
                   viewBox="0 0 24 24"
-                  className="absolute right-7 top-1/2 transform -translate-y-1/2 hover:cursor-pointer"
+                  className="absolute right-7 top-1/2 transform -translate-y-1/2 hover:cursor-pointer text-black"
                   onClick={() => setViewPassword(!viewPassword)}
                 >
                   <g
@@ -100,7 +109,7 @@ export default function LoginPage() {
                   width="25"
                   height="25"
                   viewBox="0 0 14 14"
-                  className="absolute right-7 top-1/2 transform -translate-y-1/2 hover:cursor-pointer"
+                  className="absolute right-7 top-1/2 transform -translate-y-1/2 hover:cursor-pointer text-black"
                   onClick={() => setViewPassword(!viewPassword)}
                 >
                   <g

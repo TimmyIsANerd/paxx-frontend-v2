@@ -12,8 +12,9 @@ export default function DashboardHome() {
     <div className="w-full my-3 p-3 max-h-screen overflow-y-auto">
       <OnboardingSection
         firstName={user ? getFirstName(user.fullName) : "..."}
+        user={user}
       />
-      <TransactionHistory />
+      {/* <TransactionHistory /> */}
     </div>
   );
 }

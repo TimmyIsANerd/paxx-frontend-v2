@@ -5,6 +5,7 @@ import { UserIcon, KeyIcon, TrashIcon } from "@heroicons/react/24/outline";
 import ProfileForm from "./forms/profile-form.jsx";
 import PasswordForm from "./forms/password-form";
 import DeleteAccountForm from "./forms/delete-account-form";
+import { useAuth } from "@/context/AuthContext.js";
 
 const tabs = [
   { id: "profile", label: "Profile Information", icon: UserIcon },
@@ -14,6 +15,7 @@ const tabs = [
 
 export default function AccountSettings() {
   const [activeTab, setActiveTab] = useState("profile");
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-900 p-6 w-full">
@@ -50,7 +52,7 @@ export default function AccountSettings() {
 
               {/* Content */}
               <div className="relative p-6">
-                {activeTab === "profile" && <ProfileForm />}
+                {activeTab === "profile" && <ProfileForm user={user} />}
                 {activeTab === "password" && <PasswordForm />}
                 {activeTab === "delete" && <DeleteAccountForm />}
               </div>

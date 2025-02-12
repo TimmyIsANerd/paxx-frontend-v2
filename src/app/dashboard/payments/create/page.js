@@ -1,47 +1,50 @@
-"use client"
-import { useState } from "react";
+"use client";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import QRCode from "react-qr-code";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import Link from 'next/link';
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { getProfile } from "@/services/profile";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_DAS_API_URL || 'https://paxx-das.onrender.com',
+  baseURL:
+    process.env.NEXT_PUBLIC_DAS_API_URL || "https://paxx-das.onrender.com",
   headers: {
     "Content-Type": "application/json",
-    "Accept": "application/json",
-  }
+    Accept: "application/json",
+  },
 });
 
 api.interceptors.request.use(
   (config) => {
-    console.log('Request Config:', {
+    console.log("Request Config:", {
       url: config.url,
       method: config.method,
       headers: config.headers,
-      data: config.data
+      data: config.data,
     });
     return config;
   },
   (error) => {
-    console.error('Request Error:', error);
+    console.error("Request Error:", error);
     return Promise.reject(error);
   }
 );
 
 api.interceptors.response.use(
   (response) => {
-    console.log('Response:', response);
+    console.log("Response:", response);
     return response;
   },
   (error) => {
-    console.error('Response Error:', {
+    console.error("Response Error:", {
       message: error.message,
       response: error.response,
       request: error.request,
-      config: error.config
+      config: error.config,
     });
     return Promise.reject(error);
   }
@@ -54,9 +57,13 @@ const isValidBase58 = (str) => base58Regex.test(str);
 const isValidKeypairString = (str) => {
   try {
     const keypairArray = JSON.parse(str);
-    return Array.isArray(keypairArray) && 
-           keypairArray.length === 64 && 
-           keypairArray.every(num => typeof num === 'number' && num >= 0 && num <= 255);
+    return (
+      Array.isArray(keypairArray) &&
+      keypairArray.length === 64 &&
+      keypairArray.every(
+        (num) => typeof num === "number" && num >= 0 && num <= 255
+      )
+    );
   } catch {
     return false;
   }
@@ -82,7 +89,9 @@ function PaymentSuccessModal({ isOpen, onClose, paymentLink }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-[#131B2C] rounded-lg p-4 w-full max-w-sm max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-white">Payment Link Created!</h3>
+          <h3 className="text-lg font-bold text-white">
+            Payment Link Created!
+          </h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
@@ -116,7 +125,9 @@ function PaymentSuccessModal({ isOpen, onClose, paymentLink }) {
 
           <div className="bg-[#0B0F1C] rounded-lg p-3">
             <p className="text-xs text-gray-400">Transaction Signature</p>
-            <p className="text-white text-xs break-all">{paymentLink.signature}</p>
+            <p className="text-white text-xs break-all">
+              {paymentLink.signature}
+            </p>
           </div>
 
           <button
@@ -140,9 +151,23 @@ export default function PaymentForm() {
     walletKeypair: "",
     options: {
       amount: "",
-      network: "devnet"
-    }
+      network: "devnet",
+    },
   });
+  const { token } = useAuth();
+
+  async function grabProfile() {
+    try {
+      const response = await getProfile(token);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    grabProfile();
+  }, [token]);
 
   const validateForm = () => {
     if (!isValidBase58(formData.walletAddress)) {
@@ -150,10 +175,15 @@ export default function PaymentForm() {
     }
 
     if (!isValidKeypairString(formData.walletKeypair)) {
-      throw new Error("Invalid keypair format. Must be a valid array of 64 numbers");
+      throw new Error(
+        "Invalid keypair format. Must be a valid array of 64 numbers"
+      );
     }
 
-    if (isNaN(Number(formData.options.amount)) || Number(formData.options.amount) <= 0) {
+    if (
+      isNaN(Number(formData.options.amount)) ||
+      Number(formData.options.amount) <= 0
+    ) {
       throw new Error("Amount must be a positive number");
     }
   };
@@ -168,11 +198,11 @@ export default function PaymentForm() {
       // Prepare the payload exactly as in a successful Insomnia request
       const payload = {
         walletAddress: formData.walletAddress,
-        walletKeypair: formData.walletKeypair, 
+        walletKeypair: formData.walletKeypair,
         options: {
           amount: Number(formData.options.amount),
-          network: formData.options.network
-        }
+          network: formData.options.network,
+        },
       };
 
       // Make the API request
@@ -180,11 +210,13 @@ export default function PaymentForm() {
 
       const linkWithTimestamp = {
         ...data,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       // Save to localStorage
-      const savedLinks = JSON.parse(localStorage.getItem("paymentLinks") || "[]");
+      const savedLinks = JSON.parse(
+        localStorage.getItem("paymentLinks") || "[]"
+      );
       localStorage.setItem(
         "paymentLinks",
         JSON.stringify([linkWithTimestamp, ...savedLinks])
@@ -192,18 +224,21 @@ export default function PaymentForm() {
 
       setCreatedLink(data);
       setShowSuccessModal(true);
-      
+
       // Reset form
       setFormData({
         walletAddress: "",
         walletKeypair: "",
         options: {
           amount: "",
-          network: "devnet"
-        }
+          network: "devnet",
+        },
       });
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to create payment link";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create payment link";
       toast.error(errorMessage);
       console.error("Error creating payment link:", error);
     } finally {
@@ -226,7 +261,7 @@ export default function PaymentForm() {
               View History
             </Link>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <label className="block text-sm font-medium text-gray-300">
@@ -235,7 +270,9 @@ export default function PaymentForm() {
               <input
                 type="text"
                 value={formData.walletAddress}
-                onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, walletAddress: e.target.value })
+                }
                 className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Enter your Solana wallet address"
                 required
@@ -248,13 +285,16 @@ export default function PaymentForm() {
               </label>
               <textarea
                 value={formData.walletKeypair}
-                onChange={(e) => setFormData({ ...formData, walletKeypair: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, walletKeypair: e.target.value })
+                }
                 className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 h-24"
                 placeholder="Enter your wallet keypair array (e.g., [183,215,75,...])"
                 required
               />
               <p className="text-xs text-gray-400">
-                Enter the keypair as an array of 64 numbers, exactly as shown in the example
+                Enter the keypair as an array of 64 numbers, exactly as shown in
+                the example
               </p>
             </div>
 
@@ -266,10 +306,12 @@ export default function PaymentForm() {
                 type="number"
                 step="any"
                 value={formData.options.amount}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  options: { ...formData.options, amount: e.target.value }
-                })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    options: { ...formData.options, amount: e.target.value },
+                  })
+                }
                 className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="0.00"
                 required
@@ -282,10 +324,12 @@ export default function PaymentForm() {
               </label>
               <select
                 value={formData.options.network}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  options: { ...formData.options, network: e.target.value }
-                })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    options: { ...formData.options, network: e.target.value },
+                  })
+                }
                 className="w-full bg-[#0B0F1C] border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="devnet">Devnet</option>

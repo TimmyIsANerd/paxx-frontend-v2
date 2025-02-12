@@ -9,6 +9,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import BalanceOverview from "../BalanceOverview";
+import { useRouter } from "next/navigation";
+import { Switch } from "@headlessui/react";
+import TestModeModal from "@/components/Modal/TestMode";
+import MaintenanceMode from "@/components/Modal/MaintenanceMode";
 
 const features = [
   {
@@ -34,7 +38,6 @@ const features = [
       "Create a free online store, Accept payments in SOL & other SPL Compatible Tokens",
     buttonText: "Create Store",
     url: "/dashboard/store/create",
-    primary: true,
   },
   {
     icon: DevicePhoneMobileIcon,
@@ -48,9 +51,25 @@ const features = [
 
 export default function OnboardingSection({ firstName }) {
   const [showOptions, setShowOptions] = useState(true);
+  const { push } = useRouter();
+  const [isLive, setIsLive] = useState(false);
+  const [testMode, setTestMode] = useState(false);
+  const [showDevelopmentModal, setShowDevelopmentModal] = useState(false);
+
+  function handleStatusChange(){
+    if (!isLive) {
+      setShowDevelopmentModal(true);
+    }
+  }
+
 
   return (
     <>
+      <TestModeModal isOpen={testMode} onClose={() => setTestMode(false)} />
+      <MaintenanceMode
+        isOpen={showDevelopmentModal}
+        onClose={() => setShowDevelopmentModal(false)}
+      />
       <div className="relative w-full max-w-full mx-auto p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:cursor-pointer">
         <div className="flex justify-between items-center mb-8">
           <div className="space-y-3">
@@ -69,6 +88,25 @@ export default function OnboardingSection({ firstName }) {
             <XMarkIcon className="w-5 h-5" />
           </div>
         )}
+
+        <div className="flex items-center mb-4 justify-end">
+          <span className="mr-2 text-lg">
+            {isLive ? "Live Mode" : "Test Mode"}
+          </span>
+          <Switch
+            checked={isLive}
+            onChange={handleStatusChange}
+            className={`${
+              isLive ? "bg-blue-600" : "bg-gray-200"
+            } relative inline-flex items-center h-6 rounded-full w-11`}
+          >
+            <span
+              className={`${
+                isLive ? "translate-x-6" : "translate-x-1"
+              } inline-block w-4 h-4 transform bg-white rounded-full transition`}
+            />
+          </Switch>
+        </div>
 
         {showOptions && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-3">
@@ -93,15 +131,24 @@ export default function OnboardingSection({ firstName }) {
                     {feature.description}
                   </p>
 
-                  <button
-                    className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
-                      feature.primary
-                        ? "bg-blue-500 hover:bg-blue-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {feature.buttonText}
-                  </button>
+                  {feature.primary && feature.url ? (
+                    <button
+                      onClick={() => push(feature.url)}
+                      className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-blue-500 hover:bg-blue-600 text-white `}
+                    >
+                      {feature.buttonText}
+                    </button>
+                  ) : (
+                    <button
+                      className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                        feature.primary
+                          ? "bg-blue-500 hover:bg-blue-600 text-white"
+                          : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700/50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      {feature.buttonText}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

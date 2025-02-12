@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { register } from "@/services/auth";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function SignUpPage() {
   const [viewPassword, setViewPassword] = useState(true);
   const [loading, setLoading] = useState(false);
   const { push } = useRouter();
+  const { storeProfile } = useAuth();
 
   function handleChange(e) {
     const { id, value } = e.target;
@@ -44,11 +46,11 @@ export default function SignUpPage() {
     }
 
     try {
-      await register(formData);
+      const newUser = await register(formData);
       toast("Successfully Signed Up");
-
+      storeProfile(newUser.user);
       setTimeout(() => {
-        push("/auth/login");
+        push("/auth/verify-otp");
       }, 3000);
     } catch (error) {
       console.error(error);
