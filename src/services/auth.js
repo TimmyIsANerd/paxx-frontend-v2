@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const baseURL = process.env.NEXT_PUBLIC_NODE_ENV;
+const baseURL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.usepaxx.xyz"
+    : "http://localhost:1338";
 
 export async function login(payload) {
   try {

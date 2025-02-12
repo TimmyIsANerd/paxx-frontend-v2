@@ -18,14 +18,14 @@ export function middleware(request) {
     }
   }
 
-  // if (url.includes("/dashboard")) {
-  //   const cookie = request.cookies.get("paxx_user");
-  //   if (!cookie) {
-  //     console.log(
-  //       `Checking For Cookie on Dashboard Page`,
-  //       cookie ? "Cookie Found 🍪" : "No Cookie ❌"
-  //     );
-  //     return NextResponse.redirect(`${baseURL}/auth/login`);
-  //   }
-  // }
+  if (url.includes("/dashboard")) {
+    const cookie = request.cookies.get("paxx_user");
+    if (!cookie) {
+      console.log(
+        `Checking For Cookie on Dashboard Page`,
+        cookie ? "Cookie Found 🍪" : "No Cookie ❌"
+      );
+      return NextResponse.redirect(`${baseURL}/auth/login`);
+    }
+  }
 }
