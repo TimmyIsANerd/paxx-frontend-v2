@@ -46,7 +46,7 @@ export default function PaymentLinksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F1C]">
+    <div className="min-h-screen bg-[#0B0F1C] w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold text-white mb-6">Payment Links</h1>
