@@ -56,7 +56,7 @@ const features = [
 export default function OnboardingSection({ firstName }) {
   const [showOptions, setShowOptions] = useState(true);
   const { push } = useRouter();
-  const { user, token, updateProfile } = useAuth();
+  const { user, token, storeProfile } = useAuth();
   const { getLatestBalance } = useWallet();
   const [isLive, setIsLive] = useState(false);
 
@@ -66,6 +66,7 @@ export default function OnboardingSection({ firstName }) {
   async function getCurrentProfile() {
     const response = await getProfile(token);
     const { data } = response;
+    storeProfile(data);
     if (data.userMode === "live") {
       setIsLive(true);
     } else {
