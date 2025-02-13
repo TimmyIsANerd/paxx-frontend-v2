@@ -17,7 +17,6 @@ export const AuthContextProvider = ({ children }) => {
   const [cookies, setCookie, removeCookie] = useCookies(["paxx_user"]);
   const [token, setToken] = useState(cookies.paxx_user);
   const [user, setUser] = useState(null);
-  const { push } = useRouter();
 
   function storeAuthCookie(token) {
     setCookie("paxx_user", token, {
