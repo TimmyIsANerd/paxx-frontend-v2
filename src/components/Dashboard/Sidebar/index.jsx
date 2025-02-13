@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const navigation = [
   { name: "Dashboard", icon: HomeIcon, href: "/dashboard" },
-  { name: "Payments", icon: CreditCardIcon, href: "/dashboard/payments" },
+  { name: "Payments", icon: CreditCardIcon, href: "/dashboard/payments/history" },
   { name: "Payouts", icon: ArrowsRightLeftIcon, href: "/dashboard/payouts" },
   { name: "Store", icon: ShoppingBagIcon, href: "/dashboard/store" },
   { name: "Settings", icon: Cog6ToothIcon, href: "/dashboard/settings" },
