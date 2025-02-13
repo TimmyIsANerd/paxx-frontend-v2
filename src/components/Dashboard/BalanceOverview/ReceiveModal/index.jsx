@@ -6,7 +6,7 @@ export default function ReceiveModal({ isOpen, onClose, walletAddress }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="bg-[#131B2C] rounded-2xl p-6 w-full max-w-md relative">
+      <div className="bg-[#131B2C] rounded-2xl p-6 w-full max-w-lg relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -18,7 +18,7 @@ export default function ReceiveModal({ isOpen, onClose, walletAddress }) {
           <p className="text-gray-300">Your wallet address:</p>
           <div className="bg-[#1F2A3C] border border-gray-600 rounded-lg p-4">
             <p className="text-white font-mono break-all">
-              {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
+              {walletAddress}
             </p>
           </div>
           <button
