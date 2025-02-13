@@ -67,7 +67,8 @@ export default function BalanceOverview() {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500" />
                 <span className="text-sm text-green-500">
-                  {dashboard ? dashboard.percentageIncreaseUSDC : ""}% from last month
+                  {dashboard ? dashboard.percentageIncreaseUSDC : ""}% from last
+                  month
                 </span>
               </div>
             </div>
@@ -125,7 +126,7 @@ export default function BalanceOverview() {
       <ReceiveModal
         isOpen={receiveModalOpen}
         onClose={() => setReceiveModalOpen(false)}
-        walletAddress={user ? user.wallet : ""}
+        walletAddress={user ? user.wallet.publicAddress : ""}
       />
     </div>
   );
