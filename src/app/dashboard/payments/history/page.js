@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { ClipboardIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import Link from 'next/link';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -64,7 +65,7 @@ export default function PaymentLinksPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-400 mb-1">Payment Link</p>
                         <div className="flex items-center gap-2">
-                          <p className="text-white text-sm truncate flex-1">{link.url}</p>
+                          <Link href={link.url} className="text-white text-sm truncate flex-1" target='_blank'>{link.url}</Link>
                           <button
                             onClick={() => handleCopy(link.url, index)}
                             className="shrink-0 p-1.5 rounded-md hover:bg-[#0B0F1C] text-gray-400 hover:text-white transition-all"
