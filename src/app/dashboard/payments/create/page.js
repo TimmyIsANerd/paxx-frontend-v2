@@ -147,10 +147,6 @@ export default function PaymentForm() {
   async function grabProfile() {
     try {
       const response = await getProfile(token);
-      // console.log("Wallet Keypair format:", {
-      //   keypair: response.data.wallet.walletKeypair,
-      //   type: typeof response.data.wallet.walletKeypair
-      // });
       setProfileData(response.data);
     } catch (error) {
       console.error("Error fetching profile:", error);
