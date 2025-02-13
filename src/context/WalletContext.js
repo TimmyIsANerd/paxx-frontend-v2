@@ -33,7 +33,14 @@ export const WalletContextProvider = ({ children }) => {
       setWalletAddress(parsedData.walletAddress);
     }
 
+    // Initial fetch
     getBalances();
+
+    // Set up interval for periodic fetching
+    const interval = setInterval(getBalances, 15000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   return (
