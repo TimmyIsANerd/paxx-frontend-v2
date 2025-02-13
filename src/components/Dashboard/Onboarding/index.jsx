@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FolderIcon,
   DocumentTextIcon,
@@ -13,6 +13,10 @@ import { useRouter } from "next/navigation";
 import { Switch } from "@headlessui/react";
 import TestModeModal from "@/components/Modal/TestMode";
 import MaintenanceMode from "@/components/Modal/MaintenanceMode";
+import { useWallet } from "@/context/WalletContext";
+import { useAuth } from "@/context/AuthContext";
+import { getProfile, switchMode } from "@/services/profile";
+import { toast } from "react-toastify";
 
 const features = [
   {
@@ -52,24 +56,46 @@ const features = [
 export default function OnboardingSection({ firstName }) {
   const [showOptions, setShowOptions] = useState(true);
   const { push } = useRouter();
+  const { user, token, updateProfile } = useAuth();
+  const { getLatestBalance } = useWallet();
   const [isLive, setIsLive] = useState(false);
-  const [testMode, setTestMode] = useState(false);
-  const [showDevelopmentModal, setShowDevelopmentModal] = useState(false);
 
-  function handleStatusChange(){
-    if (!isLive) {
-      setShowDevelopmentModal(true);
+  const [testMode, setTestMode] = useState(false);
+  // const [showDevelopmentModal, setShowDevelopmentModal] = useState(false);
+
+  async function getCurrentProfile() {
+    const response = await getProfile(token);
+    const { data } = response;
+    if (data.userMode === "live") {
+      setIsLive(true);
+    } else {
+      setIsLive(false);
     }
   }
 
+  useEffect(() => {
+    getCurrentProfile();
+  }, []);
+
+  async function handleStatusChange() {
+    try {
+      await switchMode(token, !isLive);
+      setIsLive(!isLive);
+      toast.success(`System in ${isLive ? "Test Mode" : "Live Mode"}`);
+      await getCurrentProfile();
+      await getLatestBalance();
+    } catch (error) {
+      toast.error(error.response.message);
+    }
+  }
 
   return (
     <>
       <TestModeModal isOpen={testMode} onClose={() => setTestMode(false)} />
-      <MaintenanceMode
+      {/* <MaintenanceMode
         isOpen={showDevelopmentModal}
         onClose={() => setShowDevelopmentModal(false)}
-      />
+      /> */}
       <div className="relative w-full max-w-full mx-auto p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:cursor-pointer">
         <div className="flex justify-between items-center mb-8">
           <div className="space-y-3">
