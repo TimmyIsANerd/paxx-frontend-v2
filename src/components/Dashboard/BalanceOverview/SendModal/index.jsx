@@ -13,6 +13,9 @@ export default function SendModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
   const { getLatestBalance, dashboardData: wallet } = useWallet();
+  const [selectedBalance, setSelectedBalance] = useState(
+    wallet?.USDCBalance || 0
+  );
 
   if (!isOpen) return null;
 
@@ -37,7 +40,7 @@ export default function SendModal({ isOpen, onClose }) {
 
     try {
       await withdraw(payload, token);
-      toast(`Successfully sent ${amount} ${currency} to ${address}`);
+      toast.success(`Successfully sent ${amount} ${currency} to ${address}`);
       await getLatestBalance();
       onClose();
     } catch (error) {
@@ -55,6 +58,14 @@ export default function SendModal({ isOpen, onClose }) {
     }
   }
 
+  function setMaxAmount() {
+    if (currency === "usdc") {
+      setAmount(wallet.USDCBalance);
+    } else {
+      setAmount(wallet.totalSolBalance);
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
       <div className="bg-[#131B2C] rounded-2xl p-6 w-full max-w-md relative">
@@ -65,8 +76,12 @@ export default function SendModal({ isOpen, onClose }) {
           <XMarkIcon className="h-6 w-6" />
         </button>
         <h2 className="text-2xl font-bold text-white mb-6">Send Crypto</h2>
+        <p className="text-right">
+          Balance : {selectedBalance}{" "}
+          <span className="uppercase">{currency}</span>
+        </p>
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
+          <div className="relative">
             <label
               htmlFor="amount"
               className="block text-sm font-medium text-gray-300 mb-1"
@@ -83,7 +98,16 @@ export default function SendModal({ isOpen, onClose }) {
               min={0}
               step={0.01}
               required
+              S
             />
+            <button
+              className="bg-purple-400 uppercase text-black flex items-center justify-center rounded-md font-semibold
+             p-1 text-sm absolute right-2 top-8 z-20"
+              onClick={setMaxAmount}
+              type="button"
+            >
+              max
+            </button>
           </div>
           <div>
             <label
@@ -95,7 +119,15 @@ export default function SendModal({ isOpen, onClose }) {
             <select
               id="currency"
               value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              onChange={(e) => {
+                const selectedCurrency = e.target.value;
+                setCurrency(selectedCurrency);
+                if (selectedCurrency === "usdc") {
+                  setSelectedBalance(wallet.USDCBalance);
+                } else {
+                  setSelectedBalance(wallet.totalSolBalance);
+                }
+              }}
               className="w-full px-3 py-2 bg-[#1F2A3C] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
