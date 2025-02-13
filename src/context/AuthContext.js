@@ -37,7 +37,7 @@ export const AuthContextProvider = ({ children }) => {
     setUser(null);
 
     setIsLoggedIn(false);
-    push("/auth/login");
+    window.location.href = "/auth/login";
   }
 
   function storeProfile(user) {
@@ -56,8 +56,6 @@ export const AuthContextProvider = ({ children }) => {
       const parsedData = JSON.parse(paxx_user);
       setUser(parsedData);
     }
-
-
   }, [cookies.paxx_user]);
 
   return (
