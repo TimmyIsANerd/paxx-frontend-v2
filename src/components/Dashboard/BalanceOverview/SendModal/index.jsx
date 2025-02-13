@@ -17,6 +17,12 @@ export default function SendModal({ isOpen, onClose }) {
     wallet?.USDCBalance || 0
   );
 
+  function clearFields() {
+    setAmount("");
+    setCurrency("usdc");
+    setAddrerss("");
+  }
+
   if (!isOpen) return null;
 
   async function handleSubmit(e) {
@@ -42,6 +48,7 @@ export default function SendModal({ isOpen, onClose }) {
       await withdraw(payload, token);
       toast.success(`Successfully sent ${amount} ${currency} to ${address}`);
       await getLatestBalance();
+      clearFields();
       onClose();
     } catch (error) {
       if (
