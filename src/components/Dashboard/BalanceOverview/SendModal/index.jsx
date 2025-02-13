@@ -49,7 +49,6 @@ export default function SendModal({ isOpen, onClose }) {
       toast.success(`Successfully sent ${amount} ${currency} to ${address}`);
       await getLatestBalance();
       clearFields();
-      onClose();
     } catch (error) {
       if (
         error.response &&

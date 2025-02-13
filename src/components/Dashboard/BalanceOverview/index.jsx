@@ -35,7 +35,7 @@ export default function BalanceOverview() {
   const [sendModalOpen, setSendModalOpen] = useState(false);
   const [receiveModalOpen, setReceiveModalOpen] = useState(false);
   const { user } = useAuth();
-  const { dashboardData: dashboard } = useWallet();
+  const { dashboardData: dashboard, getLatestBalance } = useWallet();
 
   const handleActionClick = (label) => {
     if (label === "Send") setSendModalOpen(true);
@@ -125,7 +125,10 @@ export default function BalanceOverview() {
       />
       <ReceiveModal
         isOpen={receiveModalOpen}
-        onClose={() => setReceiveModalOpen(false)}
+        onClose={() => {
+          getLatestBalance();
+          setReceiveModalOpen(false);
+        }}
         walletAddress={user ? user.wallet.publicAddress : ""}
       />
     </div>
