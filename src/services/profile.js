@@ -34,3 +34,24 @@ export async function getProfile(bearerToken) {
     throw error;
   }
 }
+
+export async function switchMode(bearerToken, status) {
+  try {
+    const response = await axios.post(
+      `${baseURL}/api/v1/user/transaction-mode`,
+      {
+        status,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${bearerToken}`,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
